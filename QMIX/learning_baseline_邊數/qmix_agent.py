@@ -132,17 +132,20 @@ class QMIXAgent:
         self.buffer = ReplayBuffer(buffer_capacity)
 
     def _format_state(self, state):
-        """格式化局部觀測 (包含 Agent ID)"""
+        agent_state = np.array(state, dtype=np.float32)
+
         obs = []
         for i in range(self.env.num_agents):
             agent_pos = self.env.agent_positions[i]
             agent_budget = self.env.remaining_agent_budgets[i]
+            
+            # Agent ID One-hot
             agent_id = np.zeros(self.env.num_agents)
             agent_id[i] = 1.0
-            
-            local_obs = np.concatenate([[agent_pos, agent_budget], state, agent_id])
+
+            local_obs = np.concatenate([[agent_pos, agent_budget], agent_state, agent_id])
             obs.append(local_obs)
-        return np.array(obs, dtype=np.float32)
+        return np.array(obs, dtype=np.float32), agent_state
 
     def _get_available_actions(self):
         """產生合法動作遮罩 (與先前完全一致以求公平)"""
@@ -230,7 +233,7 @@ class QMIXAgent:
         loss = F.mse_loss(q_tot_eval, targets)
         self.optimizer.zero_grad()
         loss.backward()
-        nn.utils.clip_grad_norm_(self.eval_q_net.parameters(), max_norm=10)
+        nn.utils.clip_grad_norm_(self.eval_q_net.parameters(), max_norm=5)
         self.optimizer.step()
 
         return loss.item()
@@ -242,7 +245,7 @@ class QMIXAgent:
 
         for episode in range(num_episodes):
             state, _ = self.env.reset()
-            obs = self._format_state(state)
+            obs, state= self._format_state(state)
             avail_actions = self._get_available_actions()
             
             done = False
@@ -253,7 +256,7 @@ class QMIXAgent:
             while not done:
                 actions = self.get_action(obs, avail_actions, self.epsilon)
                 next_state, reward, done, _, _ = self.env.step(actions)
-                next_obs = self._format_state(next_state)
+                next_obs, next_state = self._format_state(next_state)
                 next_avail_actions = self._get_available_actions()
                 
                 # 必須把原始 state 放入 Buffer 中
@@ -292,7 +295,7 @@ class QMIXAgent:
         print(f"\n=== QMIX 評估結果（執行 {num_runs} 次） ===")
         for run in range(num_runs):
             state, _ = self.env.reset()
-            obs = self._format_state(state)
+            obs, _ = self._format_state(state)
             avail_actions = self._get_available_actions()
             
             done = False
@@ -303,7 +306,7 @@ class QMIXAgent:
             while not done:
                 actions = self.get_action(obs, avail_actions, epsilon=0.0)
                 next_state, _, done, info, _ = self.env.step(actions)
-                obs = self._format_state(next_state)
+                obs, _ = self._format_state(next_state)
                 avail_actions = self._get_available_actions()
                 
                 for (agent_idx, from_node, to_node) in info.get("executed_moves", []):

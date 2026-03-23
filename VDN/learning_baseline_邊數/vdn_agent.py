@@ -88,21 +88,24 @@ class VDNAgent:
         self.buffer = ReplayBuffer(buffer_capacity)
 
     def _format_state(self, state):
-        """格式化狀態，並注入 Agent ID 以打破參數共享的對稱性"""
+        agent_state = np.array(state, dtype=np.float32)
+
         obs = []
         for i in range(self.env.num_agents):
             agent_pos = self.env.agent_positions[i]
             agent_budget = self.env.remaining_agent_budgets[i]
-            # 建立 One-hot ID (如 Agent 0 為 [1, 0, 0, 0])
+            
+            # Agent ID One-hot
             agent_id = np.zeros(self.env.num_agents)
             agent_id[i] = 1.0
             
-            local_obs = np.concatenate([[agent_pos, agent_budget], state, agent_id])
+            local_obs = np.concatenate([[agent_pos, agent_budget], agent_state, agent_id])
             obs.append(local_obs)
+
         return np.array(obs, dtype=np.float32)
 
     def _get_available_actions(self):
-        """合法動作遮罩 (與 MAPPO/GAT-PPO 100% 相同，確保比較公平)"""
+        """合法動作遮罩"""
         available_actions = np.zeros((self.env.num_agents, self.env.num_nodes), dtype=np.float32)
         for i in range(self.env.num_agents):
             curr = self.env.agent_positions[i]
