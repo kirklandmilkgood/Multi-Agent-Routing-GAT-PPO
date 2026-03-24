@@ -59,16 +59,20 @@ with open(log_file_path, "a", encoding="utf-8") as log_file:
             log_and_print(f"\n正在啟動 {algo.upper()} 的訓練與評估任務...\n")
             
             try:
+                # 環境變數字典，強制設定 Python 的 I/O 編碼為 utf-8
+                my_env = os.environ.copy()
+                my_env["PYTHONIOENCODING"] = "utf-8"
                 # 使用 Popen 取代 run，這樣能即時攔截輸出
                 # stderr=subprocess.STDOUT 代表把錯誤也混入標準輸出，一起存進 Log
                 process = subprocess.Popen(
-                    [sys.executable, "-u", "main_new.py", config_path],
+                    [sys.executable,"-X", "utf8", "-u", "main_new.py", config_path],
                     cwd=branch_dir,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
                     text=True,
                     encoding="utf-8",
-                    errors="replace" # 遇到亂碼自動替換，防止腳本當機
+                    errors="replace", # 遇到亂碼自動替換，防止腳本當機
+                    env=my_env  # 將設定好的環境變數傳給子程式
                 )
 
                 # 即時逐行讀取子程式的輸出
