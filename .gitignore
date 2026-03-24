@@ -3,6 +3,7 @@ __pycache__/
 
 ppo_checkpoints/
 *.pt
+*.log
 
 *.xlsx
 !dataset/*.xlsx  # 保留 dataset 資料夾裡的評估圖檔

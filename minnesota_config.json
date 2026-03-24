@@ -1,0 +1,41 @@
+{
+    "experiments": [
+        {
+            "num_nodes": 2636,
+            "num_edges": 8500,
+            "num_agents": 1,
+            "total_budget": 100,
+            "individual_budget": 150,
+            "dataset": "../../dataset/road-minnesota.xlsx",
+            "episodes": 100
+        },
+        {
+            "num_nodes": 2636,
+            "num_edges": 8500,
+            "num_agents": 2,
+            "total_budget": 150,
+            "individual_budget": 150,
+            "dataset": "../../dataset/road-minnesota.xlsx",
+            "episodes": 100
+        },
+        {
+            "num_nodes": 2636,
+            "num_edges": 8500,
+            "num_agents": 3,
+            "total_budget": 200,
+            "individual_budget": 150,
+            "dataset": "../../dataset/road-minnesota.xlsx",
+            "episodes": 100   
+        },   
+        {
+            "num_nodes": 2636,
+            "num_edges": 8500,
+            "num_agents": 4,
+            "total_budget": 200,
+            "individual_budget": 150,
+            "dataset": "../../dataset/road-minnesota.xlsx",
+            "episodes": 100   
+        }
+
+    ]
+}

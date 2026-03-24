@@ -1,4 +1,5 @@
 import torch
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
@@ -8,54 +9,96 @@ import random
 from collections import deque
 import time
 
-# ==========================================
-# 1. DGN 核心神經網路 (包含 GCN 通訊層)
-# ==========================================
+# Relation Kernel (多頭注意力機制)
+class RelationKernel(nn.Module):
+    def __init__(self, hidden_dim, num_heads=8):
+        super(RelationKernel, self).__init__()
+        self.num_heads = num_heads
+        self.head_dim = hidden_dim // num_heads
+        self.tau = 0.25 # 縮放因子 (Scaling factor)
+        
+        # 產生 Query, Key, Value 的投影矩陣
+        self.W_Q = nn.Linear(hidden_dim, hidden_dim)
+        self.W_K = nn.Linear(hidden_dim, hidden_dim)
+        self.W_V = nn.Linear(hidden_dim, hidden_dim)
+        
+        # 非線性轉換函數 sigma
+        self.sigma = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.ReLU()
+        )
+        
+    def forward(self, h):
+        """
+        h 形狀: (Batch_Size, Num_Agents, Hidden_Dim)
+        """
+        batch_size, num_agents, _ = h.size()
+        
+        # 投影並拆分為多頭 (Batch_Size, Heads, Num_Agents, Head_Dim)
+        Q = self.W_Q(h).view(batch_size, num_agents, self.num_heads, self.head_dim).transpose(1, 2)
+        K = self.W_K(h).view(batch_size, num_agents, self.num_heads, self.head_dim).transpose(1, 2)
+        V = self.W_V(h).view(batch_size, num_agents, self.num_heads, self.head_dim).transpose(1, 2)
+        
+        # 計算注意力能量值 e_ij = tau * Q * K^T
+        scores = torch.matmul(Q, K.transpose(-2, -1)) * self.tau # (Batch, Heads, Num_Agents, Num_Agents)
+        
+        # 取得注意力權重 alpha_ij
+        attn_weights = F.softmax(scores, dim=-1)
+        
+        # 將 Value 以注意力權重進行加權總和
+        out = torch.matmul(attn_weights, V) # (Batch, Heads, Num_Agents, Head_Dim)
+        
+        # 將多個頭拼接並送入 sigma 函數
+        out = out.transpose(1, 2).contiguous().view(batch_size, num_agents, -1)
+        out = self.sigma(out)
+        
+        return out, attn_weights
+
+
+# DGN 完整神經網路架構
 class DGNNetwork(nn.Module):
     def __init__(self, obs_dim, hidden_dim, action_dim, num_agents):
         super(DGNNetwork, self).__init__()
         self.num_agents = num_agents
         
-        # 1. 觀測值編碼器 (Encoder)：將原始未正規化的特徵轉換為隱藏向量
-        self.encoder = nn.Linear(obs_dim, hidden_dim)
+        # 觀測值編碼器 (Encoder)
+        self.encoder = nn.Sequential(
+            nn.Linear(obs_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.ReLU()
+        )
         
-        # 2. ✨ 圖卷積層 (GCN Layer)：負責 Agent 之間的訊息傳遞
-        self.gcn_weight = nn.Linear(hidden_dim, hidden_dim)
+        # 堆疊兩層卷積層 (Relation Kernels) 以逐步擴大視野
+        self.conv1 = RelationKernel(hidden_dim, num_heads=8)
+        self.conv2 = RelationKernel(hidden_dim, num_heads=8)
         
-        # 3. 決策輸出層 (Q-Network)：綜合自己的情報與鄰居情報後，輸出 Q 值
+        # 決策輸出層 (Q-Network) 
+        # DenseNet，將 h0, h1, h2 拼接，輸入維度為 hidden_dim * 3
         self.q_out = nn.Sequential(
-            nn.Linear(hidden_dim * 2, hidden_dim), # 拼接自身特徵與通訊特徵
+            nn.Linear(hidden_dim * 3, hidden_dim),
             nn.ReLU(),
             nn.Linear(hidden_dim, action_dim)
         )
 
     def forward(self, obs_batch):
-        """
-        obs_batch 形狀: (Batch_Size, Num_Agents, Obs_Dim)
-        """
-        # Step 1: 獨立編碼每個 Agent 的觀測值
-        # h 形狀: (Batch_Size, Num_Agents, Hidden_Dim)
-        h = F.relu(self.encoder(obs_batch)) 
+        #  獨立編碼
+        h0 = self.encoder(obs_batch)
         
-        # Step 2: Agent 之間的 GCN 訊息傳遞 (Message Passing)
-        # 這裡假設所有 Agent 都能互相通訊 (Fully Connected Communication Graph)
-        # 我們將所有 Agent 的特徵取平均 (Mean Aggregation)，等同於乘以正規化後的鄰接矩陣 D^(-1/2) A D^(-1/2)
-        mean_neighbor_h = h.mean(dim=1, keepdim=True) # (Batch_Size, 1, Hidden_Dim)
+        #  多頭注意力訊息傳遞
+        h1, attn1 = self.conv1(h0)
+        h2, attn2 = self.conv2(h1)
         
-        # 將鄰居情報廣播給所有 Agent，並通過 GCN 權重矩陣
-        # h_comm 形狀: (Batch_Size, Num_Agents, Hidden_Dim)
-        h_comm = F.relu(self.gcn_weight(mean_neighbor_h.expand(-1, self.num_agents, -1)))
+        # DenseNet 特徵拼接 (整合自身與多層次鄰居的資訊)
+        h_concat = torch.cat([h0, h1, h2], dim=-1)
         
-        # Step 3: 將「自身的情報 h」與「通訊得來的情報 h_comm」拼接起來
-        h_final = torch.cat([h, h_comm], dim=-1) # (Batch_Size, Num_Agents, Hidden_Dim * 2)
+        # 輸出 Q 值
+        q_values = self.q_out(h_concat)
         
-        # Step 4: 輸出 Q 值
-        q_values = self.q_out(h_final) # (Batch_Size, Num_Agents, Action_Dim)
-        return q_values
+        # 回傳 Q 值以及最高層的注意力權重
+        return q_values, attn2
 
-# ==========================================
-# 2. 經驗回放池 (與 VDN 相同)
-# ==========================================
+# 經驗回放池
 class ReplayBuffer:
     def __init__(self, capacity):
         self.buffer = deque(maxlen=capacity)
@@ -73,9 +116,7 @@ class ReplayBuffer:
     def __len__(self):
         return len(self.buffer)
 
-# ==========================================
-# 3. DGN 代理人演算法
-# ==========================================
+# DGN 代理人演算法
 class DGNAgent:
     def __init__(self, env, hidden_dim=64, lr=1e-3, gamma=0.99, buffer_capacity=10000, batch_size=32):
         self.env = env
@@ -87,12 +128,12 @@ class DGNAgent:
         self.epsilon_min = 0.05
         self.target_update_steps = 200
         self.global_step = 0
+        self.lambda_reg = 0.03 # 正則化係數
 
         self.state_dim = len(env._get_state())
         self.obs_dim = 2 + self.state_dim + env.num_agents 
         self.action_dim = env.num_nodes
 
-        # 初始化 DGN 網路 (Eval 與 Target)
         self.eval_net = DGNNetwork(self.obs_dim, hidden_dim, self.action_dim, env.num_agents).to(self.device)
         self.target_net = DGNNetwork(self.obs_dim, hidden_dim, self.action_dim, env.num_agents).to(self.device)
         self.target_net.load_state_dict(self.eval_net.state_dict())
@@ -101,24 +142,17 @@ class DGNAgent:
         self.buffer = ReplayBuffer(buffer_capacity)
 
     def _format_state(self, state):
-        """✨ 依照您的要求，完全保持未正規化的原始數據"""
         obs = []
         for i in range(self.env.num_agents):
-            # 原始位置與原始預算 (不做任何除法)
             raw_pos = self.env.agent_positions[i]
             raw_budget = self.env.remaining_agent_budgets[i]
-            
             agent_id = np.zeros(self.env.num_agents)
             agent_id[i] = 1.0
-            
-            # 拼接未正規化的觀測值
             local_obs = np.concatenate([[raw_pos, raw_budget], state, agent_id])
             obs.append(local_obs)
-            
         return np.array(obs, dtype=np.float32)
 
     def _get_available_actions(self):
-        """產生合法動作遮罩 (與所有 Baseline 完全對齊)"""
         available_actions = np.zeros((self.env.num_agents, self.env.num_nodes), dtype=np.float32)
         for i in range(self.env.num_agents):
             curr = self.env.agent_positions[i]
@@ -138,12 +172,12 @@ class DGNAgent:
 
     def get_action(self, obs, avail_actions, epsilon=0.0):
         actions = []
-        # 因為 DGN 需要一次吃進所有 Agent 的觀測值來做 GCN 通訊，所以要增加一個 Batch 維度 (unsqueeze)
         obs_tensor = torch.tensor(obs, dtype=torch.float32).unsqueeze(0).to(self.device)
         
         with torch.no_grad():
-            # q_values 形狀: (1, Num_Agents, Action_Dim)
-            q_values = self.eval_net(obs_tensor).squeeze(0).cpu().numpy()
+            # 取出 q_values，忽略注意力權重
+            q_values, _ = self.eval_net(obs_tensor)
+            q_values = q_values.squeeze(0).cpu().numpy()
 
         for i in range(self.env.num_agents):
             valid_action_indices = np.where(avail_actions[i] == 1.0)[0]
@@ -169,33 +203,41 @@ class DGNAgent:
         done_b = torch.tensor(done_b, dtype=torch.float32).unsqueeze(-1).to(self.device)
         next_avail_actions_b = torch.tensor(next_avail_actions_b, dtype=torch.float32).to(self.device)
 
-        # 1. 評估目前的 Q 值 (前向傳播會觸發 GCN 通訊)
-        q_evals = self.eval_net(obs_b) # (Batch, Num_Agents, Action_Dim)
-        q_evals = q_evals.gather(2, action_b).squeeze(-1) # (Batch, Num_Agents)
+        # 評估目前的 Q 值與取得當前注意力權重
+        q_evals, current_attn = self.eval_net(obs_b) 
+        q_evals = q_evals.gather(2, action_b).squeeze(-1) 
 
-        # 2. 計算目標 Q 值 (Double DQN 邏輯)
+        # 計算目標 Q 值與取得時序正則化目標權重
         with torch.no_grad():
-            q_next_eval = self.eval_net(next_obs_b)
+            q_next_eval, target_attn = self.eval_net(next_obs_b) # 使用 eval_net 來產出 target_attn
             q_next_eval[next_avail_actions_b == 0.0] = -1e9
             argmax_action = q_next_eval.argmax(dim=2, keepdim=True)
             
-            q_next_target = self.target_net(next_obs_b)
+            q_next_target, _ = self.target_net(next_obs_b)
             max_q_next = q_next_target.gather(2, argmax_action).squeeze(-1)
             
-            # 我們將每個 Agent 自己收集到的 reward 分配給自己
             targets = reward_b + self.gamma * max_q_next * (1 - done_b)
 
-        # 3. 計算 MSE Loss 並加總所有 Agent 的誤差
-        loss = F.mse_loss(q_evals, targets)
+        # TD Error (MSE Loss)
+        td_loss = F.mse_loss(q_evals, targets)
+        
+        # Temporal Relation Regularization (KL Divergence Loss)
+        # 計算 KL 散度確保維度穩健: sum(P * log(P/Q))
+        epsilon_val = 1e-8
+        target_attn_detached = target_attn.detach()
+        kl_loss = torch.sum(target_attn_detached * (torch.log(target_attn_detached + epsilon_val) - torch.log(current_attn + epsilon_val)), dim=-1).mean()
+        
+        # 總損失
+        total_loss = td_loss + self.lambda_reg * kl_loss
         
         self.optimizer.zero_grad()
-        loss.backward()
+        total_loss.backward()
         nn.utils.clip_grad_norm_(self.eval_net.parameters(), max_norm=5)
         self.optimizer.step()
 
-        return loss.item()
+        return total_loss.item()
 
-    def train(self, num_episodes=500): # ✨ 預設調高為 500 以利觀察收斂
+    def train(self, num_episodes=500):
         logs = []
         start_time = time.time()
         epsilon_decay_step = (1.0 - self.epsilon_min) / (num_episodes * 0.8)
