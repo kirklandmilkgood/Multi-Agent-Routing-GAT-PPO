@@ -29,7 +29,7 @@ for i in range(total_exps):
     eval_file_path = dataset_path
 
     # 啟動訓練環境
-    train_env = MultiAgentTSPEnv(num_nodes=num_nodes, num_edges=num_edges, num_agents=num_agents, total_budget=t_budget, individual_budget=i_budget)
+    train_env = MultiAgentTSPEnv(num_nodes=num_nodes, num_agents=num_agents, total_budget=t_budget, individual_budget=i_budget)
 
     agent = QMIXAgent(train_env, hidden_dim=64, buffer_capacity=10000, batch_size=32)
 
@@ -37,7 +37,7 @@ for i in range(total_exps):
     train_log = agent.train(num_episodes=num_episodes)
 
     # 執行評估
-    eval_env = MultiAgentTSPEnv(num_nodes=num_nodes, num_agents=num_edges, total_budget=t_budget, individual_budget=i_budget)
+    eval_env = MultiAgentTSPEnv(num_nodes=num_nodes, num_agents=num_agents, total_budget=t_budget, individual_budget=i_budget)
     eval_env.fixed_graph = load_graph_from_excel(eval_file_path)
     agent.env = eval_env 
 

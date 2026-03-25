@@ -39,7 +39,7 @@ for i in range(total_exps):
     train_log = agent.train(num_episodes=num_episodes)
 
     # 執行評估
-    eval_env = MultiAgentTSPEnv(num_nodes=num_nodes, num_agents=num_edges, total_budget=t_budget, individual_budget=i_budget)
+    eval_env = MultiAgentTSPEnv(num_nodes=num_nodes, num_agents=num_agents, total_budget=t_budget, individual_budget=i_budget)
     eval_env.fixed_graph = load_graph_from_excel(eval_file_path)
     agent.env = eval_env 
 

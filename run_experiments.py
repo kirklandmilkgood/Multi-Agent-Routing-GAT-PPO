@@ -24,7 +24,7 @@ algorithms = [
     #"GAT_PPO"
 ]
 branch_map = {
-    "learning_baseline_連邊機率" : euro_config_path,
+    # "learning_baseline_連邊機率" : euro_config_path,
     "learning_baseline_邊數" : minnesota_config_path
 }
 
