@@ -1,0 +1,40 @@
+{
+    "experiments": [
+        {
+            "num_nodes": 10390,
+            "num_edges": 16710,
+            "num_agents": 1,
+            "total_budget": 200,
+            "individual_budget": 300,
+            "dataset": "../../dataset/Large_network.xlsx",
+            "episodes": 100
+        },
+        {
+            "num_nodes": 10390,
+            "num_edges": 16710,
+            "num_agents": 2,
+            "total_budget": 300,
+            "individual_budget": 300,
+            "dataset": "../../dataset/Large_network.xlsx",
+            "episodes": 100
+        },
+        {
+            "num_nodes": 10390,
+            "num_edges": 16710,
+            "num_agents": 3,
+            "total_budget": 400,
+            "individual_budget": 300,
+            "dataset": "../../dataset/Large_network.xlsx",
+            "episodes": 100   
+        },   
+        {
+            "num_nodes": 10390,
+            "num_edges": 16710,
+            "num_agents": 4,
+            "total_budget": 400,
+            "individual_budget": 300,
+            "dataset": "../../dataset/Large_network.xlsx",
+            "episodes": 100   
+        }
+    ]
+}

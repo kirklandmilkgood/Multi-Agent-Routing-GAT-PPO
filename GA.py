@@ -4,6 +4,8 @@ import pandas as pd
 import numpy as np
 import os
 import time
+import json
+import sys
 from copy import deepcopy
 
 
@@ -173,7 +175,7 @@ class MATPGeneticSolver:
         return valid_paths, total_reward, total_costs
 
 
-def load_or_generate_graph(file_path="/home/lu/paper_code/dataset/ER_Graph_50Nodes.xlsx"): #輸入要讀取圖的路徑
+def load_or_generate_graph(file_path="dataset/Large_network.xlsx"): #輸入要讀取圖的路徑
     if os.path.exists(file_path):
         df = pd.read_excel(file_path)
         G = nx.Graph()
@@ -190,31 +192,52 @@ def load_or_generate_graph(file_path="/home/lu/paper_code/dataset/ER_Graph_50Nod
 
 
 if __name__ == "__main__":
-    start_time = time.time()
+    # 接收總指揮腳本傳來的 config 路徑，若無則預設抓取上層目錄的 config.json
+    config_path = sys.argv[1] if len(sys.argv) > 1 else "large_network_config.json"
+        
+    if not os.path.exists(config_path):
+            print(f"找不到設定檔: {config_path}")
+            sys.exit(1)
 
-    G = load_or_generate_graph()
-    rewards = {n: int(np.random.randint(5, 20)) for n in G.nodes()}
+    with open(config_path, 'r', encoding='utf-8') as f:
+            configs = json.load(f)["experiments"]
 
-    #設定agent數量、總預算、個人預算
-    num_agents = 4
-    total_budget = 100
-    per_agent_budget = 50
-    start_node = 0
-    start_nodes = [start_node] * num_agents
+    total_exps = len(configs)
+    for i in range(total_exps):
+        num_nodes = configs[i]["num_nodes"]
+        num_edges = configs[i]["num_edges"]
+        num_agents = configs[i]["num_agents"]
+        t_budget = configs[i]["total_budget"]
+        i_budget = configs[i]["individual_budget"]
+        dataset_path = configs[i]["dataset"]
+        num_episodes = configs[i]["episodes"]
+        print(f"experiment setting: num nodes: {num_nodes}, num edges: {num_edges}, num agents: {num_agents}, total budget: {t_budget}, individual budget: {i_budget}...")
 
-   
-    solver = MATPGeneticSolver(
-        G, rewards, total_budget, per_agent_budget, num_agents, start_nodes,
-        population_size=30, generations=80, mutation_rate=0.6,
-        low_quantile=0.5, elite_k=1, seed=42
-    ) #設定GA參數
-    paths, total_reward, costs = solver.run()
+        eval_file_path = dataset_path
+        start_time = time.time()
 
-    print("Start Nodes:", start_nodes)
-    print("Paths:", paths)
-    print("Total Reward Collected:", total_reward)
-    print("Costs per Agent:", costs)
-    print("Total Cost Used:", sum(costs))
+        G = load_or_generate_graph(eval_file_path)
+        rewards = {n: int(np.random.randint(5, 20)) for n in G.nodes()}
 
-    end_time = time.time()
-    print(f"Total Execution Time: {end_time - start_time:.2f} seconds")
+        #設定agent數量、總預算、個人預算
+        total_budget = t_budget
+        per_agent_budget = i_budget
+        start_node = 0
+        start_nodes = [start_node] * num_agents
+
+    
+        solver = MATPGeneticSolver(
+            G, rewards, total_budget, per_agent_budget, num_agents, start_nodes,
+            population_size=30, generations=80, mutation_rate=0.6,
+            low_quantile=0.5, elite_k=1, seed=42
+        ) #設定GA參數
+        paths, total_reward, costs = solver.run()
+
+        print("Start Nodes:", start_nodes)
+        print("Paths:", paths)
+        print("Total Reward Collected:", total_reward)
+        print("Costs per Agent:", costs)
+        print("Total Cost Used:", sum(costs))
+
+        end_time = time.time()
+        print(f"Total Execution Time: {end_time - start_time:.2f} seconds")

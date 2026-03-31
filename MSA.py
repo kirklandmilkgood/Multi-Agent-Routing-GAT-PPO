@@ -3,6 +3,8 @@ import pandas as pd
 import networkx as nx
 import random
 import os
+import sys
+import json
 import time
 
 class MATPInstance:
@@ -137,23 +139,44 @@ class MATPSolverSA_MATP:
         return self.best_solution, self.best_score
 
 if __name__ == "__main__":
-    file_path = "/home/lu/paper_code/dataset/ER_Graph_50Nodes.xlsx" #輸入要讀取檔案路徑
-    G, rewards = load_graph_and_rewards(file_path)
-    instance = MATPInstance(G, rewards, num_agents=4, total_budget=100, per_agent_budget=50, start_node=0) 
-    #設定agent數量、總預算、個人預算
-    solver = MATPSolverSA_MATP(instance)
+        # 接收總指揮腳本傳來的 config 路徑，若無則預設抓取上層目錄的 config.json
+    config_path = sys.argv[1] if len(sys.argv) > 1 else "large_network_config.json"
+        
+    if not os.path.exists(config_path):
+            print(f"找不到設定檔: {config_path}")
+            sys.exit(1)
 
-    start_time = time.time()
-    solution, score = solver.anneal()
-    end_time = time.time()
+    with open(config_path, 'r', encoding='utf-8') as f:
+            configs = json.load(f)["experiments"]
 
-    if not any(solution):
-        print("找不到合法解，請調整預算或圖的結構")
-    else:
-        print("\n最佳解（共同起點 0）：")
-        for i, path in enumerate(solution):
-            print(f"Agent {i+1}: {path}")
-        total_cost = sum(solver.total_cost(path) for path in solution)
-        print(f"\n收集報酬：{score}")
-        print(f"總花費：{total_cost}")
-        print(f"執行時間：{end_time - start_time:.2f} 秒")
+    total_exps = len(configs)
+    for i in range(total_exps):
+        num_nodes = configs[i]["num_nodes"]
+        num_edges = configs[i]["num_edges"]
+        num_agents = configs[i]["num_agents"]
+        t_budget = configs[i]["total_budget"]
+        i_budget = configs[i]["individual_budget"]
+        dataset_path = configs[i]["dataset"]
+        num_episodes = configs[i]["episodes"]
+        print(f"experiment setting: num nodes: {num_nodes}, num edges: {num_edges}, num agents: {num_agents}, total budget: {t_budget}, individual budget: {i_budget}...")
+
+        eval_file_path = dataset_path
+        G, rewards = load_graph_and_rewards(eval_file_path)
+        instance = MATPInstance(G, rewards, num_agents=num_agents, total_budget=t_budget, per_agent_budget=i_budget, start_node=0) 
+        #設定agent數量、總預算、個人預算
+        solver = MATPSolverSA_MATP(instance)
+
+        start_time = time.time()
+        solution, score = solver.anneal()
+        end_time = time.time()
+
+        if not any(solution):
+            print("找不到合法解，請調整預算或圖的結構")
+        else:
+            print("\n最佳解（共同起點 0）：")
+            for i, path in enumerate(solution):
+                print(f"Agent {i+1}: {path}")
+            total_cost = sum(solver.total_cost(path) for path in solution)
+            print(f"\n收集報酬：{score}")
+            print(f"總花費：{total_cost}")
+            print(f"執行時間：{end_time - start_time:.2f} 秒")

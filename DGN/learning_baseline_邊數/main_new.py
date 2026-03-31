@@ -44,4 +44,4 @@ for i in range(total_exps):
     agent.env = eval_env 
 
     eval_df = agent.evaluate(num_runs=10)
-    eval_df.to_excel(f"dgn_output_logs.xlsx", index=False)
+    eval_df.to_excel(f"dgn_output_logs_{num_agents}.xlsx", index=False)

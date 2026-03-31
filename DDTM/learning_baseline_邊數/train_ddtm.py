@@ -12,7 +12,7 @@ import time
 #設定訓練圖
 def build_er_graph(n_nodes=2643, n_edges=6000):
     max_attempts = 1000
-    for attempt in range(max_attempts):
+    for _ in range(max_attempts):
         G = nx.gnm_random_graph(n=n_nodes, m=n_edges)
         if nx.is_connected(G):
             break

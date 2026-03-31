@@ -4,6 +4,8 @@ from sklearn.cluster import KMeans
 import random
 import time
 import os
+import json
+import sys
 import pandas as pd
 
 class RewardBudgetHeuristic:
@@ -81,45 +83,65 @@ class RewardBudgetHeuristic:
         return all_routes
 
 if __name__ == "__main__":
-    start_time = time.time()
+    # 接收總指揮腳本傳來的 config 路徑，若無則預設抓取上層目錄的 config.json
+    config_path = sys.argv[1] if len(sys.argv) > 1 else "large_network_config.json"
+        
+    if not os.path.exists(config_path):
+            print(f"找不到設定檔: {config_path}")
+            sys.exit(1)
 
-    #輸入要讀取檔案路徑
-    file_path = "/home/lu/paper_code/dataset/ER_Graph_50Nodes.xlsx"
-    if os.path.exists(file_path):
-        df = pd.read_excel(file_path)
-        G = nx.Graph()
-        for _, row in df.iterrows():
-            G.add_edge(int(row['From']), int(row['To']), weight=int(row['Weight']))
-        print("有讀到輸入的檔案!!!")
-    else:
-        G = nx.erdos_renyi_graph(50, 0.6)
-        while not nx.is_connected(G):
+    with open(config_path, 'r', encoding='utf-8') as f:
+            configs = json.load(f)["experiments"]
+
+    total_exps = len(configs)
+    for i in range(total_exps):
+        num_nodes = configs[i]["num_nodes"]
+        num_edges = configs[i]["num_edges"]
+        num_agents = configs[i]["num_agents"]
+        t_budget = configs[i]["total_budget"]
+        i_budget = configs[i]["individual_budget"]
+        dataset_path = configs[i]["dataset"]
+        num_episodes = configs[i]["episodes"]
+        print(f"experiment setting: num nodes: {num_nodes}, num edges: {num_edges}, num agents: {num_agents}, total budget: {t_budget}, individual budget: {i_budget}...")
+
+        eval_file_path = dataset_path
+        start_time = time.time()
+
+        #輸入要讀取檔案路徑
+        if os.path.exists(eval_file_path):
+            df = pd.read_excel(eval_file_path)
+            G = nx.Graph()
+            for _, row in df.iterrows():
+                G.add_edge(int(row['From']), int(row['To']), weight=int(row['Weight']))
+            print("有讀到輸入的檔案!!!")
+        else:
             G = nx.erdos_renyi_graph(50, 0.6)
-        for (u, v) in G.edges():
-            G[u][v]['weight'] = np.random.randint(1, 10)
-        print("Noooooo讀到輸入的檔案!!!")
+            while not nx.is_connected(G):
+                G = nx.erdos_renyi_graph(50, 0.6)
+            for (u, v) in G.edges():
+                G[u][v]['weight'] = np.random.randint(1, 10)
+            print("Noooooo讀到輸入的檔案!!!")
 
-    rewards = {n: (np.random.randint(5, 20), 1) for n in G.nodes()}
-    rewards[0] = (0, 0)
+        rewards = {n: (np.random.randint(5, 20), 1) for n in G.nodes()}
+        rewards[0] = (0, 0)
 
-    #設定agent數量、總預算、個人預算
-    total_budget = 100
-    per_agent_budget = 50
-    num_agents = 4
+        #設定agent數量、總預算、個人預算
+        total_budget = t_budget
+        per_agent_budget = i_budget
 
-    heuristic = RewardBudgetHeuristic(G, node_rewards=rewards, total_budget=total_budget, per_agent_budget=per_agent_budget, num_agents=num_agents)
-    results = heuristic.run()
+        heuristic = RewardBudgetHeuristic(G, node_rewards=rewards, total_budget=total_budget, per_agent_budget=per_agent_budget, num_agents=num_agents)
+        results = heuristic.run()
 
-    total_reward = 0
-    total_cost = 0
-    for res in results:
-        print(f"Agent {res['agent']} | Reward: {res['reward']} | Cost: {res['cost']} | Route: {res['route']}")
-        total_reward += res['reward']
-        total_cost += res['cost']
+        total_reward = 0
+        total_cost = 0
+        for res in results:
+            print(f"Agent {res['agent']} | Reward: {res['reward']} | Cost: {res['cost']} | Route: {res['route']}")
+            total_reward += res['reward']
+            total_cost += res['cost']
 
-    print(f"Total Reward Collected by All Agents: {total_reward}")
-    print(f"Total Cost Spent by All Agents: {total_cost}")
-    print(f"Remaining Budget: {heuristic.total_budget - total_cost}")
+        print(f"Total Reward Collected by All Agents: {total_reward}")
+        print(f"Total Cost Spent by All Agents: {total_cost}")
+        print(f"Remaining Budget: {heuristic.total_budget - total_cost}")
 
-    end_time = time.time()
-    print(f"Total Execution Time: {end_time - start_time:.2f} seconds")
+        end_time = time.time()
+        print(f"Total Execution Time: {end_time - start_time:.2f} seconds")
