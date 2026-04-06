@@ -1,4 +1,5 @@
 import osmnx as ox
+import networkx as nx
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -15,6 +16,19 @@ G = ox.graph_from_place(place_name, network_type='drive')
 # 將圖形轉為無向圖 (確保雙向連通)
 G = ox.convert.to_undirected(G)
 print(f"下載完成！總節點數: {len(G.nodes)} | 總邊數: {len(G.edges)}")
+
+is_connected = nx.is_connected(G)
+if not is_connected:
+    # 取得最大的連通分量 (LCC)
+    # nx.connected_components 回傳所有孤島，取節點數最多的那一個
+    largest_cc = max(nx.connected_components(G), key=len)
+    
+    # 建立子圖
+    G = G.subgraph(largest_cc).copy()
+    print(f"已過濾孤島！剩餘節點數: {len(G.nodes)} | 剩餘邊數: {len(G.edges)}")
+else:
+    print("路網本身已完全連通，無需處理。")
+
 
 # 視覺化路網資料
 print("正在進行路網視覺化...")

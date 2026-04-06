@@ -7,6 +7,7 @@ import os
 import json
 import sys
 import pandas as pd
+from pathlib import Path
 
 class RewardBudgetHeuristic:
     def __init__(self, graph: nx.Graph, node_rewards: dict, total_budget: int, per_agent_budget: int, num_agents: int = 3, seed: int = 42, fix_layout: bool = False):
@@ -100,11 +101,13 @@ if __name__ == "__main__":
         num_agents = configs[i]["num_agents"]
         t_budget = configs[i]["total_budget"]
         i_budget = configs[i]["individual_budget"]
-        dataset_path = configs[i]["dataset"]
+        dataset_path = Path(configs[i]["dataset"])
         num_episodes = configs[i]["episodes"]
         print(f"experiment setting: num nodes: {num_nodes}, num edges: {num_edges}, num agents: {num_agents}, total budget: {t_budget}, individual budget: {i_budget}...")
+        filtered_parts = [part for part in dataset_path.parts if part != '..']
+        # 重新組合路徑
+        eval_file_path = Path(*filtered_parts)
 
-        eval_file_path = dataset_path
         start_time = time.time()
 
         #輸入要讀取檔案路徑

@@ -12,3 +12,4 @@ ppo_checkpoints/
 **/.DS_Store
 
 .*/
+cache/

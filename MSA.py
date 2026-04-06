@@ -6,6 +6,7 @@ import os
 import sys
 import json
 import time
+from pathlib import Path
 
 class MATPInstance:
     def __init__(self, graph, rewards, num_agents, total_budget, per_agent_budget, start_node=0):
@@ -156,11 +157,13 @@ if __name__ == "__main__":
         num_agents = configs[i]["num_agents"]
         t_budget = configs[i]["total_budget"]
         i_budget = configs[i]["individual_budget"]
-        dataset_path = configs[i]["dataset"]
+        dataset_path = Path(configs[i]["dataset"])
         num_episodes = configs[i]["episodes"]
         print(f"experiment setting: num nodes: {num_nodes}, num edges: {num_edges}, num agents: {num_agents}, total budget: {t_budget}, individual budget: {i_budget}...")
+        filtered_parts = [part for part in dataset_path.parts if part != '..']
+        # 重新組合路徑
+        eval_file_path = Path(*filtered_parts)
 
-        eval_file_path = dataset_path
         G, rewards = load_graph_and_rewards(eval_file_path)
         instance = MATPInstance(G, rewards, num_agents=num_agents, total_budget=t_budget, per_agent_budget=i_budget, start_node=0) 
         #設定agent數量、總預算、個人預算
