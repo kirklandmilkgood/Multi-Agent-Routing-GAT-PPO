@@ -10,7 +10,7 @@ from pathlib import Path
 from copy import deepcopy
 
 # 通用 dynamic 環境模擬函數
-def evaluate_paths_in_dynamic_env(graph, paths, rewards_obj, total_budget, per_agent_budget, change_prob=0.10):
+def evaluate_paths_in_dynamic_env(graph, paths, rewards_obj, total_budget, per_agent_budget, change_prob=0.10, target_nodes=None):
     dynamic_G = deepcopy(graph)
     global_budget_left = total_budget
     local_budgets_left = [per_agent_budget] * len(paths)
@@ -33,7 +33,8 @@ def evaluate_paths_in_dynamic_env(graph, paths, rewards_obj, total_budget, per_a
     # 初始起點獎勵收集
     for p in paths:
         if p and p[0] not in global_collected:
-            actual_total_reward += get_r(p[0])
+            if target_nodes is None or p[0] in target_nodes:
+                actual_total_reward += get_r(p[0])
             global_collected.add(p[0])
             
     # step by step 模擬
@@ -52,7 +53,8 @@ def evaluate_paths_in_dynamic_env(graph, paths, rewards_obj, total_budget, per_a
                     actual_costs[i] += actual_cost
                     
                     if v not in global_collected:
-                        actual_total_reward += get_r(v)
+                        if target_nodes is None or v in target_nodes:    
+                            actual_total_reward += get_r(v)
                         global_collected.add(v)
                 else:
                     local_budgets_left[i] = -1 # 標記破產，後續不再移動

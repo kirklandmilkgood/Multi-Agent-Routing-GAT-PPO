@@ -10,7 +10,7 @@ from pathlib import Path
 from copy import deepcopy
 
 # 通用 dynamic 環境模擬函數
-def evaluate_paths_in_dynamic_env(graph, paths, rewards_obj, total_budget, per_agent_budget, change_prob=0.10):
+def evaluate_paths_in_dynamic_env(graph, paths, rewards_obj, total_budget, per_agent_budget, change_prob=0.10, target_nodes=None):
     dynamic_G = deepcopy(graph)
     global_budget_left = total_budget
     local_budgets_left = [per_agent_budget] * len(paths)
@@ -33,7 +33,8 @@ def evaluate_paths_in_dynamic_env(graph, paths, rewards_obj, total_budget, per_a
     # 初始起點獎勵收集
     for p in paths:
         if p and p[0] not in global_collected:
-            actual_total_reward += get_r(p[0])
+            if target_nodes is None or p[0] in target_nodes:
+                actual_total_reward += get_r(p[0])
             global_collected.add(p[0])
             
     # step by step 模擬
@@ -52,7 +53,8 @@ def evaluate_paths_in_dynamic_env(graph, paths, rewards_obj, total_budget, per_a
                     actual_costs[i] += actual_cost
                     
                     if v not in global_collected:
-                        actual_total_reward += get_r(v)
+                        if target_nodes is None or v in target_nodes:    
+                            actual_total_reward += get_r(v)
                         global_collected.add(v)
                 else:
                     local_budgets_left[i] = -1 # 標記破產，後續不再移動
@@ -82,9 +84,8 @@ class MATPGreedySolver:
         
         self.paths = [[start_nodes[i]] for i in range(num_agents)]
         self.travel_costs = [0.0 for _ in range(num_agents)]
-
-        
         self.total_reward = 0.0
+        self.intended_targets = set(start_nodes)
 
     def run(self):
         per_agent_budget = self.total_budget / self.num_agents
@@ -142,6 +143,8 @@ class MATPGreedySolver:
             if not self.global_collected[best_target]:
                 self.total_reward += self.rewards[best_target]
                 self.global_collected[best_target] = True
+            
+                self.intended_targets.add(best_target)
             
 
         return self.paths, self.total_reward, self.travel_costs
@@ -214,7 +217,7 @@ if __name__ == "__main__":
         # 進行動態環境評估
         if dynamic_traffic:
             per_agent_budget = total_budget / num_agents
-            dyn_reward, dyn_costs = evaluate_paths_in_dynamic_env(G, paths, rewards, total_budget, per_agent_budget, change_prob=0.10)
+            dyn_reward, dyn_costs = evaluate_paths_in_dynamic_env(G, paths, rewards, total_budget, per_agent_budget, change_prob=0.10, target_nodes=solver.intended_targets)
             print("\n--- 動態路網評估結果 (change_prob=0.10) ---")
             print(f"ACTUAL Total Reward Collected: {dyn_reward}")
             print(f"ACTUAL Costs per Agent: {dyn_costs}")
