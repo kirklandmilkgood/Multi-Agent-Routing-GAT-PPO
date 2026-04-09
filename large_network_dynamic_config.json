@@ -8,7 +8,7 @@
             "individual_budget": 300,
             "dataset": "../../dataset/Large_network.xlsx",
             "episodes": 100,
-            "dynamic": 0
+            "dynamic": 1
         },
         {
             "num_nodes": 10390,
@@ -18,7 +18,7 @@
             "individual_budget": 300,
             "dataset": "../../dataset/Large_network.xlsx",
             "episodes": 100,
-            "dynamic": 0
+            "dynamic": 1
         },
         {
             "num_nodes": 10390,
@@ -28,7 +28,7 @@
             "individual_budget": 300,
             "dataset": "../../dataset/Large_network.xlsx",
             "episodes": 100,
-            "dynamic": 0   
+            "dynamic": 1 
         },   
         {
             "num_nodes": 10390,
@@ -38,7 +38,7 @@
             "individual_budget": 300,
             "dataset": "../../dataset/Large_network.xlsx",
             "episodes": 100,
-            "dynamic": 0   
+            "dynamic": 1   
         }
     ]
 }

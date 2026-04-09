@@ -25,11 +25,12 @@ for i in range(total_exps):
     i_budget = configs[i]["individual_budget"]
     dataset_path = configs[i]["dataset"]
     num_episodes = configs[i]["episodes"]
+    is_dynamic = True if configs[i]["dynamic"] else False
     print(f"experiment setting: num nodes: {num_nodes}, num edges: {num_edges}, num agents: {num_agents}, total budget: {t_budget}, individual budget: {i_budget}...")
     eval_file_path = dataset_path
 
     # 啟動訓練環境
-    train_env = MultiAgentTSPEnv(num_nodes=num_nodes, num_agents=num_agents, total_budget=t_budget, individual_budget=i_budget)
+    train_env = MultiAgentTSPEnv(num_nodes=num_nodes, num_agents=num_agents, total_budget=t_budget, individual_budget=i_budget, dynamic_traffic=is_dynamic)
 
     agent = QMIXAgent(train_env, hidden_dim=64, buffer_capacity=10000, batch_size=32)
 
@@ -37,7 +38,7 @@ for i in range(total_exps):
     train_log = agent.train(num_episodes=num_episodes)
 
     # 執行評估
-    eval_env = MultiAgentTSPEnv(num_nodes=num_nodes, num_agents=num_agents, total_budget=t_budget, individual_budget=i_budget)
+    eval_env = MultiAgentTSPEnv(num_nodes=num_nodes, num_agents=num_agents, total_budget=t_budget, individual_budget=i_budget, dynamic_traffic=is_dynamic)
     eval_env.fixed_graph = load_graph_from_excel(eval_file_path)
     agent.env = eval_env 
 

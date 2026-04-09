@@ -33,6 +33,7 @@ for i in range(total_exps):
     i_budget = configs[i]["individual_budget"]
     dataset_path = configs[i]["dataset"]
     num_episodes = configs[i]["episodes"]
+    is_dynamic = True if configs[i]["dynamic"] else False
     print(f"experiment setting: num nodes: {num_nodes}, num edges: {num_edges}, num agents: {num_agents}, total budget: {t_budget}, individual budget: {i_budget}...")
     eval_file_path = dataset_path
     output_log_path = f"ppo_output_gat_logs_{num_agents}.xlsx"
@@ -42,7 +43,8 @@ for i in range(total_exps):
         num_edges=num_edges,
         num_agents=num_agents,
         total_budget=t_budget,
-        individual_budget=i_budget
+        individual_budget=i_budget,
+        dynamic_traffic=is_dynamic
     )
     agent = PPOGATAgent(train_env)
 
@@ -58,7 +60,8 @@ for i in range(total_exps):
         num_agents=num_agents,
         total_budget=t_budget,
         individual_budget=i_budget,
-        eval_file_path=eval_file_path
+        eval_file_path=eval_file_path,
+        dynamic_traffic=is_dynamic
     )
     agent.env = eval_env  # 替換 agent 的環境為評估環境
 

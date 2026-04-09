@@ -1,4 +1,3 @@
-
 import os
 import numpy as np
 import networkx as nx
@@ -18,7 +17,7 @@ def generate_er_graph_with_edge_count(num_nodes, num_edges, max_attempts=1000):
                 G[u][v]['weight'] = np.random.randint(1, 10)
             return G
         attempts += 1
-    print(f"無法在 {max_attempts} 次內建立連通圖，請檢查 num_nodes={num_nodes} 與 num_edges={num_edges} 是否合理。")
+    print(f"無法在 {max_attempts} 次內產生連通圖 (n={num_nodes}, m={num_edges}) \n")
 
     safe_m = int(0.55 * num_nodes * math.log(num_nodes))
     attempts = 0
@@ -31,7 +30,6 @@ def generate_er_graph_with_edge_count(num_nodes, num_edges, max_attempts=1000):
             return G
         attempts += 1
     raise ValueError(f"無法在 {max_attempts} 次內產生替代連通圖 (n={num_nodes}, m={safe_m})")
-
 
 
 def load_graph_from_excel(file_path):
@@ -49,7 +47,7 @@ def load_graph_from_excel(file_path):
 
 class MultiAgentTSPEnv(gym.Env):
     def __init__(self, num_nodes=50, num_edges=None, num_agents=2, total_budget=100, individual_budget=100,
-                 eval_file_path=None):
+                 eval_file_path=None, dynamic_traffic=False, change_prob=0.10):
         super().__init__()
         self.num_nodes = num_nodes
         self.num_edges = num_edges
@@ -61,11 +59,29 @@ class MultiAgentTSPEnv(gym.Env):
         self.fixed_rewards = None
         self.input_dim = 4  
 
+        # dynamic 開關與機率
+        self.dynamic_traffic = dynamic_traffic
+        self.change_prob = change_prob
+
         if eval_file_path:
             self.fixed_graph = load_graph_from_excel(eval_file_path)
             self.num_nodes = self.fixed_graph.number_of_nodes()
 
         self.reset()
+    
+    # dynamic 機制函數
+    def _update_traffic_step_by_step(self):
+        for u, v, data in self.graph.edges(data=True):
+            # 確保已記錄該條路的初始靜態權重 (t=0)
+            if 'base_weight' not in data:
+                data['base_weight'] = data['weight']
+                
+            # 以 change_prob 的機率觸發路況變化
+            if np.random.rand() < self.change_prob:
+                delta = int(np.random.choice([-2, -1, 1, 2]))
+                new_weight = data['weight'] + delta
+                # bounded limits: 1 to 10
+                self.graph[u][v]['weight'] = max(1, min(10, new_weight))
 
     def _build_graph_data(self):
         node_features = []
@@ -86,7 +102,7 @@ class MultiAgentTSPEnv(gym.Env):
 
     def reset(self):
         if self.fixed_graph is not None:
-            self.graph = self.fixed_graph
+            self.graph = self.fixed_graph.copy()
         elif self.num_edges:
             self.graph = generate_er_graph_with_edge_count(self.num_nodes, self.num_edges)
         else:
@@ -95,6 +111,15 @@ class MultiAgentTSPEnv(gym.Env):
                 self.graph = nx.erdos_renyi_graph(self.num_nodes, 0.6)
             for u, v in self.graph.edges():
                 self.graph[u][v]['weight'] = np.random.randint(1, 10)
+
+        # 新的 episode 開始時，恢復基準狀態，並記錄 base_weight
+        for u, v, data in self.graph.edges(data=True):
+            if 'base_weight' in data:
+                # 若圖已被 dynamic weight 污染過，強制恢復初始權重
+                self.graph[u][v]['weight'] = data['base_weight']
+            else:
+                # 初始化記錄
+                data['base_weight'] = data['weight']
 
         self.node_rewards = {i: (np.random.randint(5, 20), 1) for i in self.graph.nodes()}
         self.agent_positions = np.array([0] * self.num_agents)
@@ -162,5 +187,10 @@ class MultiAgentTSPEnv(gym.Env):
             self.remaining_total_budget -= cost
             executed_moves.append((i, prev, a))
 
+        # agent 結算移動後，整個路網的交通狀況隨機變化
+        if self.dynamic_traffic:
+            self._update_traffic_step_by_step()
+
         done = (self.remaining_total_budget <= 0) or (self.current_step >= self.max_steps)
         return self._get_state(), rewards, done, {"executed_moves": executed_moves}, self._build_graph_data()
+

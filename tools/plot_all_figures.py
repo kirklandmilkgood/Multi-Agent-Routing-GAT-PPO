@@ -3,7 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-def generate_academic_plots(json_filepath, output_dir="plots"):
+def generate_academic_plots(json_filepath, output_dir="../figures"):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -76,8 +76,17 @@ def generate_academic_plots(json_filepath, output_dir="plots"):
         ax.tick_params(axis='y', labelsize=18, length=0)
         ax.tick_params(axis='x', length=0, pad=10)
 
-        # 圖例位置設定
-        ax.legend(loc='lower center', bbox_to_anchor=(0.5, 1.05), ncol=6, 
+        # 取得 handles 與 labels
+        handles, labels = ax.get_legend_handles_labels()
+        ncol = 6
+        
+        # 將 1D 列表依照欄位交錯排列
+        handles_reordered = [h for i in range(ncol) for h in handles[i::ncol]]
+        labels_reordered = [l for i in range(ncol) for l in labels[i::ncol]]
+
+        # 傳入重新排序後的 handles 與 labels
+        ax.legend(handles_reordered, labels_reordered, 
+                  loc='lower center', bbox_to_anchor=(0.5, 1.05), ncol=ncol, 
                   frameon=False, handlelength=1.2, handleheight=1.2,
                   prop={'size': 16, 'weight': 'bold'})
 
@@ -91,4 +100,4 @@ def generate_academic_plots(json_filepath, output_dir="plots"):
     print(f"\n所有圖表皆已匯出至 '{output_dir}/' 資料夾中。")
 
 if __name__ == "__main__":
-    generate_academic_plots("experiments_data.json", output_dir="figures")
+    generate_academic_plots("../experiments_data.json", output_dir="../figures")

@@ -17,6 +17,10 @@ large_network_config_path = os.path.join(root_dir, "large_network_config.json")
 if not os.path.exists(large_network_config_path):
     print(f"找不到全域設定檔: {large_network_config_path}")
     sys.exit(1)
+large_network_dynamic_config_path = os.path.join(root_dir, "large_network_dynamic_config.json")
+if not os.path.exists(large_network_config_path):
+    print(f"找不到全域設定檔: {large_network_dynamic_config_path}")
+    sys.exit(1)
 # 定義想要依序跑的演算法資料夾名稱
 # 可隨時註解掉不想跑的演算法
 nn_algorithms = [
@@ -24,8 +28,8 @@ nn_algorithms = [
     "DGN",
     "MAPPO",
     "GAT_PPO",
-    "QMIX",
-    "DDTM"
+    "DDTM",
+    "QMIX"
 ]
 algorithms = [
     "greedy",
@@ -35,11 +39,12 @@ algorithms = [
     "Model_P"
 ]
 
-branch_map = {
-    # "learning_baseline_連邊機率" : euro_config_path,
-    # "learning_baseline_邊數" : minnesota_config_path,
-    "learning_baseline_大圖邊數": large_network_config_path
-}
+branch_map = [
+    # ("learning_baseline_連邊機率", euro_config_path),
+    # ("learning_baseline_邊數", minnesota_config_path),
+    # ("learning_baseline_大圖邊數", large_network_config_path),
+    ("learning_baseline_大圖邊數", large_network_dynamic_config_path)
+]
 
 # 建立 timestamp，用來命名 Log 檔，避免每次執行覆蓋掉舊紀錄
 timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -106,7 +111,7 @@ with open(log_file_path, "a", encoding="utf-8") as log_file:
             except Exception as e:
                 log_and_print(f"啟動 {algo.upper()} 時發生系統錯誤: {e}\n")
 
-    for branch, config_path in branch_map.items():
+    for branch, config_path in branch_map:
         # 依序遍歷演算法資料並執行訓練與評估 workflow
         algo_workflow(is_nn_network=False, config_path=config_path)
         algo_workflow(is_nn_network=True, branch=branch, config_path=config_path)

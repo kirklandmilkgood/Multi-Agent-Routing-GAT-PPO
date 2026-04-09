@@ -25,7 +25,8 @@ for i in range(total_exps):
     i_budget = configs[i]["individual_budget"]
     dataset_path = configs[i]["dataset"]
     num_episodes = configs[i]["episodes"]
+    is_dynamic = True if configs[i]["dynamic"] else False
     print(f"experiment setting: num nodes: {num_nodes}, num edges: {num_edges}, num agents: {num_agents}, total budget: {t_budget}, individual budget: {i_budget}...")
     eval_file_path = dataset_path
-    train(num_agents=num_agents, total_budget=t_budget, per_agent_budget=i_budget, n_nodes=num_nodes, n_edges=num_edges, n_episodes=num_episodes)
-    evaluate(num_agents=num_agents, total_budget=t_budget, per_agent_budget=i_budget, dataset=dataset_path)
+    train(num_agents=num_agents, total_budget=t_budget, per_agent_budget=i_budget, n_nodes=num_nodes, n_edges=num_edges, n_episodes=num_episodes, is_dynamic=is_dynamic)
+    evaluate(num_agents=num_agents, total_budget=t_budget, per_agent_budget=i_budget, dataset=dataset_path, is_dynamic=is_dynamic)

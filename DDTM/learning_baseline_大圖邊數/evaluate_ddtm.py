@@ -26,7 +26,7 @@ def prepare_node_features(graph, rewards, visited):
         node_feats.append([r, v, 0])
     return torch.tensor(node_feats, dtype=torch.float)
 
-def evaluate(num_agents, total_budget, per_agent_budget, dataset, model_path="ddtm_memsafe_final.pt"):
+def evaluate(num_agents, total_budget, per_agent_budget, dataset, is_dynamic, model_path="ddtm_memsafe_final.pt"):
     start_time = time.time()
     device = torch.device("cpu")
     max_step = 400
@@ -44,7 +44,7 @@ def evaluate(num_agents, total_budget, per_agent_budget, dataset, model_path="dd
 
     for episode in range(10):
         rewards = {n: np.random.randint(5, 20) for n in G.nodes()}
-        env = MATPEnv(graph=G, rewards=rewards, num_agents=num_agents, total_budget=total_budget, per_agent_budget=per_agent_budget)
+        env = MATPEnv(graph=G, rewards=rewards, num_agents=num_agents, total_budget=total_budget, per_agent_budget=per_agent_budget, dynamic_traffic=is_dynamic)
         obs = env.reset()
 
         episode_reward = 0

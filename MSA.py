@@ -7,6 +7,66 @@ import sys
 import json
 import time
 from pathlib import Path
+from copy import deepcopy
+
+# 通用 dynamic 環境模擬函數
+def evaluate_paths_in_dynamic_env(graph, paths, rewards_obj, total_budget, per_agent_budget, change_prob=0.10):
+    dynamic_G = deepcopy(graph)
+    global_budget_left = total_budget
+    local_budgets_left = [per_agent_budget] * len(paths)
+    
+    actual_total_reward = 0
+    actual_costs = [0.0] * len(paths)
+    global_collected = set()
+    
+    # 處理各演算法 rewards 格式不同的問題 (dict of int, dict of tuple, or list)
+    def get_r(node):
+        if isinstance(rewards_obj, dict):
+            val = rewards_obj.get(node, 0)
+            return val[0] if isinstance(val, tuple) else val
+        elif isinstance(rewards_obj, list) or isinstance(rewards_obj, np.ndarray):
+            return rewards_obj[node]
+        return 0
+
+    max_steps = max([len(p) for p in paths]) if paths else 0
+    
+    # 初始起點獎勵收集
+    for p in paths:
+        if p and p[0] not in global_collected:
+            actual_total_reward += get_r(p[0])
+            global_collected.add(p[0])
+            
+    # step by step 模擬
+    for step in range(max_steps - 1):
+        for i, path in enumerate(paths):
+            if step < len(path) - 1 and local_budgets_left[i] > 0 and global_budget_left > 0:
+                u = path[step]
+                v = path[step+1]
+                
+                # 承受當下 dynamic 成本
+                actual_cost = dynamic_G[u][v]['weight']
+                
+                if local_budgets_left[i] >= actual_cost and global_budget_left >= actual_cost:
+                    local_budgets_left[i] -= actual_cost
+                    global_budget_left -= actual_cost
+                    actual_costs[i] += actual_cost
+                    
+                    if v not in global_collected:
+                        actual_total_reward += get_r(v)
+                        global_collected.add(v)
+                else:
+                    local_budgets_left[i] = -1 # 標記破產，後續不再移動
+                    
+        # 路況隨機變動
+        for u, v, data in dynamic_G.edges(data=True):
+            if 'base_weight' not in data:
+                data['base_weight'] = data['weight']
+            if np.random.rand() < change_prob:
+                delta = int(np.random.choice([-2, -1, 1, 2]))
+                new_weight = data['weight'] + delta
+                dynamic_G[u][v]['weight'] = max(1, min(10, new_weight))
+                
+    return actual_total_reward, actual_costs
 
 class MATPInstance:
     def __init__(self, graph, rewards, num_agents, total_budget, per_agent_budget, start_node=0):
@@ -159,6 +219,7 @@ if __name__ == "__main__":
         i_budget = configs[i]["individual_budget"]
         dataset_path = Path(configs[i]["dataset"])
         num_episodes = configs[i]["episodes"]
+        dynamic_traffic = True if configs[i]["dynamic"] else False
         print(f"experiment setting: num nodes: {num_nodes}, num edges: {num_edges}, num agents: {num_agents}, total budget: {t_budget}, individual budget: {i_budget}...")
         filtered_parts = [part for part in dataset_path.parts if part != '..']
         # 重新組合路徑
@@ -183,3 +244,10 @@ if __name__ == "__main__":
             print(f"\n收集報酬：{score}")
             print(f"總花費：{total_cost}")
             print(f"執行時間：{end_time - start_time:.2f} 秒")
+        # 進行動態環境評估
+            if dynamic_traffic:
+                dyn_reward, dyn_costs = evaluate_paths_in_dynamic_env(G, solution, rewards, t_budget, i_budget, change_prob=0.10)
+                print("\n--- 動態路網評估結果 (change_prob=0.10) ---")
+                print(f"ACTUAL Total Reward Collected: {dyn_reward}")
+                print(f"ACTUAL Costs per Agent: {dyn_costs}")
+                print(f"ACTUAL Total Cost Used: {sum(dyn_costs)}")

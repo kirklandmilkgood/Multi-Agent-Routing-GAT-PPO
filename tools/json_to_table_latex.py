@@ -1,7 +1,7 @@
 import json
 import os
 
-def generate_latex_from_json(json_filepath, output_dir="tables"):
+def generate_latex_from_json(json_filepath, output_dir="../tables"):
     # 確認輸出資料夾是否存在，若無則自動建立
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -90,4 +90,4 @@ def generate_latex_from_json(json_filepath, output_dir="tables"):
         print(f"生成 LaTeX 表格並儲存至: {output_filepath}")
 
 if __name__ == "__main__":
-    generate_latex_from_json("experiments_data.json")
+    generate_latex_from_json("../experiments_data.json")

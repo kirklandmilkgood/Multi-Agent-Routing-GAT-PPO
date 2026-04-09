@@ -1,11 +1,10 @@
-
 import gym
 import numpy as np
 import networkx as nx
 from gym import spaces
 
 class MATPEnv(gym.Env):
-    def __init__(self, graph: nx.Graph, rewards: dict, num_agents: int, total_budget: float, per_agent_budget: float, start_node: int = 0):
+    def __init__(self, graph: nx.Graph, rewards: dict, num_agents: int, total_budget: float, per_agent_budget: float, start_node: int = 0, dynamic_traffic: bool = False, change_prob: float = 0.10):
         super(MATPEnv, self).__init__()
         self.graph = graph
         self.raw_rewards = rewards.copy()
@@ -13,6 +12,10 @@ class MATPEnv(gym.Env):
         self.total_budget = total_budget
         self.per_agent_budget = per_agent_budget
         self.start_node = start_node
+
+        # dynamic 開關與機率設定
+        self.dynamic_traffic = dynamic_traffic
+        self.change_prob = change_prob
 
         self.reset()
 
@@ -24,7 +27,28 @@ class MATPEnv(gym.Env):
             "visited": spaces.MultiBinary(len(self.graph.nodes))
         })
 
+    # dynamic 機制函數
+    def _update_traffic_step_by_step(self):
+        for u, v, data in self.graph.edges(data=True):
+            # 確保已記錄該條路的初始靜態權重 (t=0)
+            if 'base_weight' not in data:
+                data['base_weight'] = data['weight']
+                
+            # 以 change_prob 的機率觸發路況變化
+            if np.random.rand() < self.change_prob:
+                delta = int(np.random.choice([-2, -1, 1, 2]))
+                new_weight = data['weight'] + delta
+                # bounded limits: 1 to 10
+                self.graph[u][v]['weight'] = max(1, min(10, new_weight))
+
     def reset(self):
+        # 確保新的 episode 開始時，恢復基準狀態，並記錄 base_weight
+        for u, v, data in self.graph.edges(data=True):
+            if 'base_weight' in data:
+                self.graph[u][v]['weight'] = data['base_weight']
+            else:
+                data['base_weight'] = data['weight']
+                
         self.agent_positions = [self.start_node] * self.num_agents
         self.budget_left = [self.per_agent_budget] * self.num_agents
         self.visited = np.zeros(len(self.graph.nodes), dtype=np.int32)
@@ -64,6 +88,10 @@ class MATPEnv(gym.Env):
                 self.total_collected_reward += self.rewards[action]
                 self.rewards[action] = 0
                 self.visited[action] = 1
+
+        # agent 結算移動後，整個路網的交通狀況隨機變化
+        if self.dynamic_traffic:
+            self._update_traffic_step_by_step()
 
         done = all(b <= 0 for b in self.budget_left)
         obs = self._get_obs()

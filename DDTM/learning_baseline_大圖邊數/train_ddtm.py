@@ -41,7 +41,7 @@ def prepare_node_features(graph, rewards, visited):
         node_feats.append([r, v, 0])
     return torch.tensor(node_feats, dtype=torch.float)
 
-def train(num_agents, total_budget, per_agent_budget, n_nodes, n_edges, n_episodes):
+def train(num_agents, total_budget, per_agent_budget, n_nodes, n_edges, n_episodes, is_dynamic):
     start_time = time.time()
     device = torch.device("cpu")
     
@@ -59,7 +59,7 @@ def train(num_agents, total_budget, per_agent_budget, n_nodes, n_edges, n_episod
         print(f"Episode {episode} | Graph: {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges")
 
         rewards = {n: np.random.randint(5, 20) for n in graph.nodes()}
-        env = MATPEnv(graph, rewards, num_agents=num_agents, total_budget=total_budget, per_agent_budget=per_agent_budget)
+        env = MATPEnv(graph, rewards, num_agents=num_agents, total_budget=total_budget, per_agent_budget=per_agent_budget, dynamic_traffic=is_dynamic)
 
         obs = env.reset()
         log_probs = []
