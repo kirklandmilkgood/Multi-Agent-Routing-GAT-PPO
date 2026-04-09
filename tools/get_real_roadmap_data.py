@@ -42,10 +42,12 @@ fig, ax = ox.plot_graph(G,
                         bgcolor='k',           # 黑底
                         edge_color='#ffffff',   # 白線道路
                         edge_linewidth=0.8,     # 道路粗細
-                        node_size=0,           # 隱藏節點，突顯道路
+                        node_size=5,           # 隱藏節點，突顯道路
+                        node_color="#ec93d7",  # 設定節點顏色為紅色
+                        node_zorder=3,         # 確保節點繪製在道路線條的上方
                         show=False, 
                         close=False)
-output_img = "dataset/Taichung.png"
+output_img = "../dataset/Taichung.png"
 fig.savefig(output_img, dpi=300, bbox_inches='tight', pad_inches=0)
 print(f"路網視覺化圖片已儲存為 {output_img}")
 plt.show()
@@ -78,6 +80,6 @@ else:
     df_edges['Weight'] = 1
 
 # 輸出 Excel 檔案
-output_filename = f"dataset/Large_network.xlsx"
+output_filename = f"../dataset/Large_network.xlsx"
 df_edges.to_excel(output_filename, index=False)
 print(f"檔案已儲存為 {output_filename}")

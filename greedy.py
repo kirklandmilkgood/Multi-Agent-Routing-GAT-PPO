@@ -195,7 +195,7 @@ if __name__ == "__main__":
         G = load_or_generate_graph(eval_file_path)
         rewards = {n: np.random.randint(5, 20) for n in G.nodes()}
 
-        #設定agent數量、總預算
+        # 設定agent數量、總預算
         total_budget = t_budget
         start_nodes = random.sample(list(G.nodes), num_agents)
 
@@ -213,7 +213,7 @@ if __name__ == "__main__":
 
         # 進行動態環境評估
         if dynamic_traffic:
-            per_agent_budget = total_budget / num_agents # Greedy 沒有傳入個體預算，我們手動計算
+            per_agent_budget = total_budget / num_agents
             dyn_reward, dyn_costs = evaluate_paths_in_dynamic_env(G, paths, rewards, total_budget, per_agent_budget, change_prob=0.10)
             print("\n--- 動態路網評估結果 (change_prob=0.10) ---")
             print(f"ACTUAL Total Reward Collected: {dyn_reward}")

@@ -6,10 +6,12 @@ ppo_checkpoints/
 *.log
 
 *.xlsx
-!dataset/*.xlsx  # 保留 dataset 資料夾裡的評估圖檔
+# 保留 dataset 資料夾裡的評估圖檔
+!dataset/*.xlsx  
 
 .DS_Store
 **/.DS_Store
 
 .*/
 cache/
+**/cache/
