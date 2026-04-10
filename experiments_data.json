@@ -2,7 +2,7 @@
     "figures": [
         {
             "saved_file_name": "50_nodes_solution_quality",
-            "horizontal_axis_title": "Agent Number",
+            "horizontal_axis_title": "Number of Agents",
             "vertical_axis_title": "Objective Value",
             "group_name": [1, 2, 3, 4],
             "data":{
@@ -21,7 +21,7 @@
         },
         {
             "saved_file_name": "100_nodes_solution_quality",
-            "horizontal_axis_title": "Agent Number",
+            "horizontal_axis_title": "Number of Agents",
             "vertical_axis_title": "Objective Value",
             "group_name": [1, 2, 3, 4],
             "data":{
@@ -40,7 +40,7 @@
         },
         {
             "saved_file_name": "150_nodes_solution_quality",
-            "horizontal_axis_title": "Agent Number",
+            "horizontal_axis_title": "Number of Agents",
             "vertical_axis_title": "Objective Value",
             "group_name": [1, 2, 3, 4],
             "data":{
@@ -59,7 +59,7 @@
         },   
         {
             "saved_file_name": "200_nodes_solution_quality",
-            "horizontal_axis_title": "Agent Number",
+            "horizontal_axis_title": "Number of Agents",
             "vertical_axis_title": "Objective Value",
             "group_name": [1, 2, 3, 4],
             "data":{
@@ -78,7 +78,7 @@
         },
         {
             "saved_file_name": "50_nodes_runtime",
-            "horizontal_axis_title": "Agent Number",
+            "horizontal_axis_title": "Number of Agents",
             "vertical_axis_title": "Times (s)",
             "group_name": [1, 2, 3, 4],
             "data":{
@@ -97,7 +97,7 @@
         },
         {
             "saved_file_name": "100_nodes_runtime",
-            "horizontal_axis_title": "Agent Number",
+            "horizontal_axis_title": "Number of Agents",
             "vertical_axis_title": "Times (s)",
             "group_name": [1, 2, 3, 4],
             "data":{
@@ -116,7 +116,7 @@
         },
         {
             "saved_file_name": "150_nodes_runtime",
-            "horizontal_axis_title": "Agent Number",
+            "horizontal_axis_title": "Number of Agents",
             "vertical_axis_title": "Times (s)",
             "group_name": [1, 2, 3, 4],
             "data":{
@@ -135,7 +135,7 @@
         },
         {
             "saved_file_name": "200_nodes_runtime",
-            "horizontal_axis_title": "Agent Number",
+            "horizontal_axis_title": "Number of Agents",
             "vertical_axis_title": "Times (s)",
             "group_name": [1, 2, 3, 4],
             "data":{
@@ -154,7 +154,7 @@
         },
         {
             "saved_file_name": "euroroad_solution_quality",
-            "horizontal_axis_title": "Agent Number",
+            "horizontal_axis_title": "Number of Agents",
             "vertical_axis_title": "Objective Value",
             "group_name": [1, 2, 3, 4],
             "data":{
@@ -173,7 +173,7 @@
         },
         {
             "saved_file_name": "minnesota_solution_quality",
-            "horizontal_axis_title": "Agent Number",
+            "horizontal_axis_title": "Number of Agents",
             "vertical_axis_title": "Objective Value",
             "group_name": [1, 2, 3, 4],
             "data":{
@@ -192,7 +192,7 @@
         },
         {
             "saved_file_name": "euroroad_runtime",
-            "horizontal_axis_title": "Agent Number",
+            "horizontal_axis_title": "Number of Agents",
             "vertical_axis_title": "Times (s)",
             "group_name": [1, 2, 3, 4],
             "data":{
@@ -211,7 +211,7 @@
         },
         {
             "saved_file_name": "minnesota_runtime",
-            "horizontal_axis_title": "Agent Number",
+            "horizontal_axis_title": "Number of Agents",
             "vertical_axis_title": "Times (s)",
             "group_name": [1, 2, 3, 4],
             "data":{
@@ -230,7 +230,7 @@
         },
                 {
             "saved_file_name": "taichung_runtime",
-            "horizontal_axis_title": "Agent Number",
+            "horizontal_axis_title": "Number of Agents",
             "vertical_axis_title": "Times (s)",
             "group_name": [1, 2, 3, 4],
             "data":{
@@ -249,7 +249,7 @@
         },
                 {
             "saved_file_name": "taichung_solution_quality",
-            "horizontal_axis_title": "Agent Number",
+            "horizontal_axis_title": "Number of Agents",
             "vertical_axis_title": "Objective Value",
             "group_name": [1, 2, 3, 4],
             "data":{
@@ -270,10 +270,10 @@
     "tables": [
         {
             "saved_file_name": "er_graphs_training_time",
-            "caption": "TABLE II: Training time (in seconds) of GAT-PPO and SOTA algorithms on ER graphs of different sizes (50 episodes).",
+            "caption": "Training time (in seconds) of GAT-PPO and SOTA algorithms on ER graphs of different sizes (50 episodes).",
             "column_name": ["ER_50", "ER_100", "ER_150", "ER_200"],
             "row_name": [1, 2, 3, 4],
-            "row_title": "Agent Number",
+            "row_title": "$\\#$ of Agents",
             "data":{
                 "DDTM": [[14.19, 20.78, 30.79, 38.00], [26.49, 32.32, 46.59, 57.68], [45.84, 45.34, 61.51, 78.48], [68.63, 74.57, 81.38, 94.26]],
                 "GAT-PPO": [[14.54, 49.82, 134.14, 330.10], [9.85, 33.38, 152.24, 329.45], [11.99, 34.68, 122.16, 324.22], [13.98, 25.77, 95.49, 257.43]],
@@ -285,10 +285,10 @@
         },
         {
             "saved_file_name": "real_road_networks_training_time",
-            "caption": "TABLE III: Training time (in seconds) of GAT-PPO and SOTA algorithms on real road networks (100 episodes).",
+            "caption": "Training time (in seconds) of GAT-PPO and SOTA algorithms on real road networks (100 episodes).",
             "column_name": ["Euroroad", "Minnesota", "Taichung"],
             "row_name": [1, 2, 3, 4],
-            "row_title": "Agent Number",
+            "row_title": "$\\#$ of Agents",
             "data":{
                 "DDTM": [[1135.40, 1635.61, 30945.21], [1247.92, 1690.79, 31450.34], [1360.53, 1731.87, 32809.23], [1464.11, 1803.68, 40024.20]],
                 "GAT-PPO": [[163.33, 786.34, 18119.64], [167.57, 478.63, 15678.97], [168.84, 576.21, 14898.76], [131.03, 490.18, 13133.19]],

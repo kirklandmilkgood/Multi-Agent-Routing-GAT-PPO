@@ -39,8 +39,8 @@ print("正在進行路網視覺化...")
 # node_size: 節點大小
 # node_color: 節點顏色
 fig, ax = ox.plot_graph(G, 
-                        bgcolor='k',           # 黑底
-                        edge_color='#ffffff',   # 白線道路
+                        bgcolor='w',           # 黑底
+                        edge_color='k',   # 白線道路
                         edge_linewidth=0.8,     # 道路粗細
                         node_size=5,           # 隱藏節點，突顯道路
                         node_color="#ec93d7",  # 設定節點顏色為紅色
