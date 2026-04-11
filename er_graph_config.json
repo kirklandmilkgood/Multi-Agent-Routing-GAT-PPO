@@ -1,0 +1,148 @@
+{
+    "experiments": [
+        {
+            "num_nodes": 50,
+            "num_agents": 1,
+            "total_budget": 40,
+            "individual_budget": 50,
+            "dataset": "../../dataset/ER_Graph_50Nodes.xlsx",
+            "episodes": 100,
+            "dynamic": 0
+        },
+        {
+            "num_nodes": 50,
+            "num_agents": 2,
+            "total_budget": 50,
+            "individual_budget": 50,
+            "dataset": "../../dataset/ER_Graph_50Nodes.xlsx",
+            "episodes": 100,
+            "dynamic": 0
+        },
+        {
+            "num_nodes": 50,
+            "num_agents": 3,
+            "total_budget": 100,
+            "individual_budget": 50,
+            "dataset": "../../dataset/ER_Graph_50Nodes.xlsx",
+            "episodes": 100,
+            "dynamic": 0
+        },   
+        {
+            "num_nodes": 50,
+            "num_agents": 4,
+            "total_budget": 100,
+            "individual_budget": 50,
+            "dataset": "../../dataset/ER_Graph_50Nodes.xlsx",
+            "episodes": 100,
+            "dynamic": 0   
+        },
+                {
+            "num_nodes": 100,
+            "num_agents": 1,
+            "total_budget": 75,
+            "individual_budget": 100,
+            "dataset": "../../dataset/ER_Graph_100Nodes.xlsx",
+            "episodes": 100,
+            "dynamic": 0
+        },
+        {
+            "num_nodes": 100,
+            "num_agents": 2,
+            "total_budget": 100,
+            "individual_budget": 100,
+            "dataset": "../../dataset/ER_Graph_100Nodes.xlsx",
+            "episodes": 100,
+            "dynamic": 0
+        },
+        {
+            "num_nodes": 100,
+            "num_agents": 3,
+            "total_budget": 150,
+            "individual_budget": 100,
+            "dataset": "../../dataset/ER_Graph_100Nodes.xlsx",
+            "episodes": 100,
+            "dynamic": 0
+        },   
+        {
+            "num_nodes": 100,
+            "num_agents": 4,
+            "total_budget": 150,
+            "individual_budget": 100,
+            "dataset": "../../dataset/ER_Graph_100Nodes.xlsx",
+            "episodes": 100,
+            "dynamic": 0   
+        },
+        {
+            "num_nodes": 150,
+            "num_agents": 1,
+            "total_budget": 75,
+            "individual_budget": 150,
+            "dataset": "../../dataset/ER_Graph_150Nodes.xlsx",
+            "episodes": 100,
+            "dynamic": 0
+        },
+        {
+            "num_nodes": 150,
+            "num_agents": 2,
+            "total_budget": 150,
+            "individual_budget": 150,
+            "dataset": "../../dataset/ER_Graph_150Nodes.xlsx",
+            "episodes": 100,
+            "dynamic": 0
+        },
+        {
+            "num_nodes": 150,
+            "num_agents": 3,
+            "total_budget": 200,
+            "individual_budget": 150,
+            "dataset": "../../dataset/ER_Graph_150Nodes.xlsx",
+            "episodes": 100,
+            "dynamic": 0
+        },   
+        {
+            "num_nodes": 150,
+            "num_agents": 4,
+            "total_budget": 200,
+            "individual_budget": 150,
+            "dataset": "../../dataset/ER_Graph_150Nodes.xlsx",
+            "episodes": 100,
+            "dynamic": 0   
+        },
+                {
+            "num_nodes": 200,
+            "num_agents": 1,
+            "total_budget": 100,
+            "individual_budget": 200,
+            "dataset": "../../dataset/ER_Graph_200Nodes.xlsx",
+            "episodes": 100,
+            "dynamic": 0
+        },
+        {
+            "num_nodes": 200,
+            "num_agents": 2,
+            "total_budget": 200,
+            "individual_budget": 200,
+            "dataset": "../../dataset/ER_Graph_200Nodes.xlsx",
+            "episodes": 100,
+            "dynamic": 0
+        },
+        {
+            "num_nodes": 200,
+            "num_agents": 3,
+            "total_budget": 300,
+            "individual_budget": 200,
+            "dataset": "../../dataset/ER_Graph_200Nodes.xlsx",
+            "episodes": 100,
+            "dynamic": 0
+        },   
+        {
+            "num_nodes": 200,
+            "num_agents": 4,
+            "total_budget": 300,
+            "individual_budget": 200,
+            "dataset": "../../dataset/ER_Graph_200Nodes.xlsx",
+            "episodes": 100,
+            "dynamic": 0   
+        }
+    ]
+}

@@ -31,9 +31,7 @@ def evaluate(num_agents, total_budget, per_agent_budget, dataset, is_dynamic, mo
     device = torch.device("cpu")
     max_step = 400
 
-    G = load_input_graph(dataset)
-    
-    
+    G = load_input_graph(dataset)      
     n_nodes = G.number_of_nodes()
     # model = DDTM(num_nodes=n_nodes).to(device) 大圖會OOM
     model = DDTM(num_nodes=n_nodes, embed_dim=32, nhead=2, num_layers=1).to(device) #為了避免OOM

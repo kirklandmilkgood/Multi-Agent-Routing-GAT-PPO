@@ -26,15 +26,12 @@ def prepare_node_features(graph, rewards, visited):
         node_feats.append([r, v, 0])
     return torch.tensor(node_feats, dtype=torch.float)
 
-def evaluate(model_path="ddtm_memsafe_final.pt"):
+def evaluate(num_agents, total_budget, per_agent_budget, dataset, model_path="ddtm_memsafe_final.pt"):
     start_time = time.time()
     device = torch.device("cpu")
-    num_agents = 4
-    total_budget = 200
-    per_agent_budget = 150
     max_step = 200
 
-    G = load_input_graph()
+    G = load_input_graph(dataset)
     
     
     n_nodes = G.number_of_nodes()

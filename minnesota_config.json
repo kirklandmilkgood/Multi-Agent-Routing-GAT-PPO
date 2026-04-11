@@ -7,7 +7,8 @@
             "total_budget": 100,
             "individual_budget": 150,
             "dataset": "../../dataset/road-minnesota.xlsx",
-            "episodes": 100
+            "episodes": 100,
+            "dynamic": 0
         },
         {
             "num_nodes": 2636,
@@ -16,7 +17,8 @@
             "total_budget": 150,
             "individual_budget": 150,
             "dataset": "../../dataset/road-minnesota.xlsx",
-            "episodes": 100
+            "episodes": 100,
+            "dynamic": 0
         },
         {
             "num_nodes": 2636,
@@ -25,7 +27,8 @@
             "total_budget": 200,
             "individual_budget": 150,
             "dataset": "../../dataset/road-minnesota.xlsx",
-            "episodes": 100   
+            "episodes": 100,
+            "dynamic": 0 
         },   
         {
             "num_nodes": 2636,
@@ -34,7 +37,8 @@
             "total_budget": 200,
             "individual_budget": 150,
             "dataset": "../../dataset/road-minnesota.xlsx",
-            "episodes": 100   
+            "episodes": 100,
+            "dynamic": 0   
         }
 
     ]

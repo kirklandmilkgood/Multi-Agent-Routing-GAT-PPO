@@ -159,7 +159,7 @@ if __name__ == "__main__":
     total_exps = len(configs)
     for i in range(total_exps):
         num_nodes = configs[i]["num_nodes"]
-        num_edges = configs[i]["num_edges"]
+        num_edges = configs[i].get("num_edges", "-")
         num_agents = configs[i]["num_agents"]
         t_budget = configs[i]["total_budget"]
         i_budget = configs[i]["individual_budget"]

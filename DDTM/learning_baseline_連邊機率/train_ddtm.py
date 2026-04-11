@@ -27,20 +27,15 @@ def prepare_node_features(graph, rewards, visited):
         node_feats.append([r, v, 0])
     return torch.tensor(node_feats, dtype=torch.float)
 
-def train():
+def train(num_agents, total_budget, per_agent_budget, n_nodes, n_episodes):
     start_time = time.time()
     device = torch.device("cpu")
-    #設定agent數量、總預算、個人預算
-    num_agents = 1
-    total_budget = 50
-    per_agent_budget = 100
     max_step = 200
 
-    model = DDTM(num_nodes=1175).to(device)
+    model = DDTM(num_nodes=n_nodes).to(device)
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
     #設定 episodes、entropy_weight
-    n_episodes = 100
     entropy_weight = 0.01
 
     for episode in range(n_episodes):

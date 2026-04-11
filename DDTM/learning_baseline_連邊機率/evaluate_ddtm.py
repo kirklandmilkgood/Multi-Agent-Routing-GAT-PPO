@@ -28,20 +28,16 @@ def prepare_node_features(graph, rewards, visited):
         node_feats.append([r, v, 0])
     return torch.tensor(node_feats, dtype=torch.float)
 
-def evaluate(model_path="ddtm_memsafe_final.pt"):
+def evaluate(num_agents, total_budget, per_agent_budget, dataset, model_path="ddtm_memsafe_final.pt"):
     start_time = time.time()
     device = torch.device("cpu")
-    #設定agent數量、總預算、個人預算限制
-    num_agents = 1
-    total_budget = 50
-    per_agent_budget = 100
 
+    G = load_input_graph(dataset)   
+    n_nodes = G.number_of_nodes()
     #設定node數量
-    model = DDTM(num_nodes=1175).to(device)
+    model = DDTM(num_nodes=n_nodes).to(device)
     model.load_state_dict(torch.load(model_path, map_location=device))
     model.eval()
-
-    G = load_input_graph()
     total_rewards = []
 
     for episode in range(10):

@@ -5,6 +5,10 @@ import datetime
 
 # 取得絕對路徑的 config 檔案
 root_dir = os.path.dirname(os.path.abspath(__file__))
+er_config_path =os.path.join(root_dir, "er_graph_config.json")
+if not os.path.exists(er_config_path):
+    print(f"找不到全域設定檔: {er_config_path}")
+    sys.exit(1)
 euro_config_path = os.path.join(root_dir, "euroroad_config.json")
 if not os.path.exists(euro_config_path):
     print(f"找不到全域設定檔: {euro_config_path}")
@@ -40,10 +44,11 @@ algorithms = [
 ]
 
 branch_map = [
+    ("learning_baseline_連邊機率", er_config_path),
     # ("learning_baseline_連邊機率", euro_config_path),
     # ("learning_baseline_邊數", minnesota_config_path),
     # ("learning_baseline_大圖邊數", large_network_config_path),
-    ("learning_baseline_大圖邊數", large_network_dynamic_config_path)
+    # ("learning_baseline_大圖邊數", large_network_dynamic_config_path)
 ]
 
 # 建立 timestamp，用來命名 Log 檔，避免每次執行覆蓋掉舊紀錄

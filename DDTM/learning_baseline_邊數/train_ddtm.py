@@ -31,19 +31,11 @@ def prepare_node_features(graph, rewards, visited):
         node_feats.append([r, v, 0])
     return torch.tensor(node_feats, dtype=torch.float)
 
-def train():
+def train(num_agents, total_budget, per_agent_budget, n_nodes, n_edges, n_episodes):
     start_time = time.time()
     device = torch.device("cpu")
-    
-    
-    num_agents = 4
-    total_budget = 200
-    per_agent_budget = 150
     max_step = 200
-    n_episodes = 100
     entropy_weight = 0.01
-    n_nodes = 2643
-    n_edges = 8500
 
     # model = DDTM(num_nodes=n_nodes).to(device) 大圖會OOM
     model = DDTM(num_nodes=n_nodes, embed_dim=32, nhead=2, num_layers=1).to(device) #為了避免OOM
