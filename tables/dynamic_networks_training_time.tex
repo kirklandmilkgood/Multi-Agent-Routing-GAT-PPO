@@ -1,0 +1,18 @@
+\begin{table}[H]
+\centering
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|c|cccccc|}
+\hline
+\multirow{2}{*}{\textbf{$\#$ of Agents}} & \multicolumn{6}{c|}{\textbf{Taichung (dynamic)}} \\ \cline{2-7}
+ & \textbf{DDTM} & \textbf{GAT-PPO} & \textbf{MAPPO} & \textbf{VDN} & \textbf{QMIX} & \textbf{DGN} \\ \hline
+1 & 31256.70 & 18465.89 & 9039.52 & 11921.77 & 245600.12 & 12098.24 \\
+2 & 32209.10 & 15932.27 & 8736.79 & 11314.61 & 238067.77 & 10292.22 \\
+3 & 32077.78 & 15165.11 & 8312.91 & 11191.68 & 199066.45 & 10128.57 \\
+4 & 31908.55 & 13424.77 & 8229.39 & 9917.81 & 199522.80 & 9046.62 \\
+\hline
+\end{tabular}
+}
+\caption{Training time (in seconds) of GAT-PPO and SOTA algorithms on dynamic networks (100 episodes).}
+\label{tab:dynamic_networks_training_time}
+\end{table}

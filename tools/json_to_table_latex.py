@@ -77,7 +77,7 @@ def generate_latex_from_json(json_filepath, output_dir="../tables"):
         latex.append("}")
         
         # 加入 json 中指定的 caption 與自動 label
-        latex.append(f"\\caption*{{{caption_text}}}")
+        latex.append(f"\\caption{{{caption_text}}}")
         latex.append(f"\\label{{tab:{filename}}}")
         
         latex.append("\\end{table}")
