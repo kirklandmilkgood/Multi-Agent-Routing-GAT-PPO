@@ -1,0 +1,15 @@
+{
+    "experiments": [
+        {
+            "num_nodes": 2636,
+            "num_edges": 8500,
+            "num_agents": 4,
+            "total_budget": 200,
+            "individual_budget": 150,
+            "episodes": 100,
+            "dynamic": 0,
+            "horizontal_axis_title": "Episode",
+            "vertical_axis_title": "Objective Value"
+        }
+    ]
+}

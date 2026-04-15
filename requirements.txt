@@ -8,3 +8,4 @@ torch_geometric==2.7.0
 openpyxl==3.1.5
 osmnx==2.1.0
 matplotlib==3.10.8
+seaborn==0.13.2

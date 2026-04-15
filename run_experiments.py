@@ -25,6 +25,17 @@ large_network_dynamic_config_path = os.path.join(root_dir, "large_network_dynami
 if not os.path.exists(large_network_config_path):
     print(f"找不到全域設定檔: {large_network_dynamic_config_path}")
     sys.exit(1)
+taichung_lc_config_path = os.path.join(root_dir, "learning_curve_taichung_config.json")
+if not os.path.exists(taichung_lc_config_path):
+    print(f"找不到全域設定檔: {taichung_lc_config_path}")
+    sys.exit(1)
+minnesota_lc_config_path = os.path.join(root_dir, "learning_curve_minnesota_config.json")
+if not os.path.exists(minnesota_lc_config_path):
+    print(f"找不到全域設定檔: {minnesota_lc_config_path}")
+    sys.exit(1)
+
+# 定義 learning curve 隨機種子
+learning_curve_seeds = [42, 100, 123]
 # 定義想要依序跑的演算法資料夾名稱
 # 可隨時註解掉不想跑的演算法
 nn_algorithms = [
@@ -44,7 +55,9 @@ algorithms = [
 ]
 
 branch_map = [
-    ("learning_baseline_連邊機率", er_config_path),
+    ("learning_baseline_邊數", minnesota_lc_config_path),
+    ("learning_baseline_大圖邊數", taichung_lc_config_path),
+    # ("learning_baseline_連邊機率", er_config_path),
     # ("learning_baseline_連邊機率", euro_config_path),
     # ("learning_baseline_邊數", minnesota_config_path),
     # ("learning_baseline_大圖邊數", large_network_config_path),
@@ -116,10 +129,70 @@ with open(log_file_path, "a", encoding="utf-8") as log_file:
             except Exception as e:
                 log_and_print(f"啟動 {algo.upper()} 時發生系統錯誤: {e}\n")
 
+    def learning_curve_workflow(branch="", config_path=""):
+        log_and_print("\n==================================================\n")
+        log_and_print("啟動 Learning Curve 實驗階段 (多 Seed 陰影繪圖模式)...\n")
+        log_and_print("==================================================\n")
+        
+        # 將 seed 陣列轉成字串陣列，方便 subprocess 傳遞
+        seed_strs = [str(s) for s in learning_curve_seeds]
+        seeds_display = " ".join(seed_strs)
+        
+        for algo in nn_algorithms:
+            algo_dir = os.path.join(root_dir, algo)
+            branch_dir = os.path.join(algo_dir, branch)
+            
+            script_path = os.path.join(branch_dir, "learning_curve.py")
+            if not os.path.exists(script_path):
+                log_and_print(f"\n找不到學習曲線腳本 {script_path}，跳過 {algo.upper()}...\n")
+                continue
+
+            # 一次傳入所有 seed
+            log_and_print(f"\n[{algo.upper()} | Seeds: {seeds_display}] 正在收集與繪製學習曲線數據...\n")
+            
+            try:
+                my_env = os.environ.copy()
+                my_env["PYTHONIOENCODING"] = "utf-8"
+                
+                # 將多個 seed 與演算法名稱一起傳進去
+                command = [
+                    sys.executable, "-X", "utf8", "-u", "learning_curve.py", 
+                    "--config", config_path,
+                    "--algo", algo.upper(), # 傳入實際演算法名稱供畫圖與存檔使用
+                    "--seeds"
+                ] + seed_strs # 展開 seed list 接在後面
+
+                process = subprocess.Popen(
+                    command,
+                    cwd=branch_dir,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    env=my_env
+                )
+
+                for line in process.stdout:
+                    log_and_print(line)
+
+                process.wait()
+
+                if process.returncode != 0:
+                    log_and_print(f"\n{algo.upper()} 學習曲線發生錯誤！(Return Code: {process.returncode})\n")
+                else:
+                    log_and_print(f"\n{algo.upper()} 學習曲線數據收集與陰影繪圖完成！\n")
+                    
+            except Exception as e:
+                log_and_print(f"啟動 {algo.upper()} Learning Curve 時發生系統錯誤: {e}\n")
+
     for branch, config_path in branch_map:
         # 依序遍歷演算法資料並執行訓練與評估 workflow
-        algo_workflow(is_nn_network=False, config_path=config_path)
-        algo_workflow(is_nn_network=True, branch=branch, config_path=config_path)
+        if "learning_curve" in config_path:
+            learning_curve_workflow(branch=branch, config_path=config_path)
+        else:
+            algo_workflow(is_nn_network=False, config_path=config_path)
+            algo_workflow(is_nn_network=True, branch=branch, config_path=config_path)
 
     finish_msg = "\n 所有排定的演算法與參數組合已全部執行完畢！\n"
     log_and_print(finish_msg)
