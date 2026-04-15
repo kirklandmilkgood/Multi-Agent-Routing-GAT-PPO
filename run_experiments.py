@@ -43,15 +43,15 @@ nn_algorithms = [
     "DGN",
     "MAPPO",
     "GAT_PPO",
-    "DDTM",
+    # "DDTM",
     "QMIX"
 ]
 algorithms = [
-    "greedy",
-    "RW",
-    "GA",
-    "MSA",
-    "Model_P"
+    # "greedy",
+    # "RW",
+    # "GA",
+    # "MSA",
+    # "Model_P"
 ]
 
 branch_map = [
