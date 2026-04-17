@@ -41,6 +41,7 @@ def train(num_agents, total_budget, per_agent_budget, n_nodes, n_edges, n_episod
     model = DDTM(num_nodes=n_nodes, embed_dim=32, nhead=2, num_layers=1).to(device) #為了避免OOM
 
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
+    rewards_history = []
 
     for episode in range(n_episodes):
         graph = build_er_graph(n_nodes=n_nodes, n_edges=n_edges)
@@ -75,6 +76,9 @@ def train(num_agents, total_budget, per_agent_budget, n_nodes, n_edges, n_episod
         entropy_bonus = -entropy_weight * torch.stack(entropies).sum()
         loss = policy_loss + entropy_bonus
 
+        # 記錄該 episode 的總分
+        rewards_history.append(total_reward)
+
         if not torch.isfinite(loss):
             print(f"Episode {episode}: Loss is NaN or Inf, skipping update.")
             continue
@@ -100,6 +104,7 @@ def train(num_agents, total_budget, per_agent_budget, n_nodes, n_edges, n_episod
     torch.save(model.state_dict(), "ddtm_memsafe_final.pt")
     total_time = time.time() - start_time
     print(f"Total training time: {total_time:.2f} seconds")
+    return rewards_history
 
 if __name__ == "__main__":
     train()

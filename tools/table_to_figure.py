@@ -3,11 +3,12 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import math
+from matplotlib.ticker import FuncFormatter  # 用來客製化 Y 軸科學記號格式
 
 def draw_bar_chart(saved_file_name, x_label, y_label, x_ticks, data_dict, output_dir, color_map, use_log_scale=False):
     """
     核心長條圖繪製函數
-    加入 use_log_scale 參數以支援對數座標軸
+    針對真實數據優化 Log Scale 範圍與刻度
     """
     print(f"  -> 輸出圖表: {saved_file_name}.png ...")
     fig, ax = plt.subplots(figsize=(12, 6), dpi=300)
@@ -33,17 +34,40 @@ def draw_bar_chart(saved_file_name, x_label, y_label, x_ticks, data_dict, output
 
     # 依照排好的 alg_names 依序畫圖
     for i, alg_name in enumerate(alg_names):
-        alg_values = data_dict[alg_name]
+        # 關鍵防呆：確保最小值不低於我們設定的 Y 軸地板 (1e0 = 1)
+        # 由於您的實驗數據訓練時間最少也是 1.35s，這個墊底機制只做為雙重保險
+        raw_values = data_dict[alg_name]
+        alg_values = [max(val, 1e0) if use_log_scale else val for val in raw_values]
+        
         color = color_map.get(alg_name, '#333333') 
         
-        # 為了避免 log scale 對 0 值報錯，如果數值為 0 或小於 0，給一個極小值 (如 0.01)
-        # 不過訓練時間通常大於 0，這裡直接畫即可
         ax.bar(x_ticks + offsets[i], alg_values, width=bar_width*0.98, 
                label=alg_name, color=color, edgecolor='none', zorder=3)
 
-    # 設定 Y 軸為對數座標 (log scale)
+    # ==========================================
+    # 關鍵修改：貼合實際數據的對數座標設定
+    # ==========================================
     if use_log_scale:
         ax.set_yscale('log')
+        
+        # 根據數據 (最小值 ~1.35, 最大值 ~245600)
+        # 設定 Y 軸上下限為 10^0 到 10^6
+        ax.set_ylim(1e0, 1e6)
+        
+        # 強制設定 4 個等距的刻度 (10^0, 10^2, 10^4, 10^6)
+        ax.set_yticks([1e0, 1e2, 1e4, 1e6])
+        
+        # 定義科學記號轉換函數 (強制轉換為 1.E+00, 1.E+02...)
+        def custom_sci_fmt(x, pos):
+            exp = int(math.log10(x))
+            return f"1.E{exp:+03d}"
+        
+        # 套用自定義的格式
+        ax.yaxis.set_major_formatter(FuncFormatter(custom_sci_fmt))
+        
+        # 關閉次要刻度的文字，避免版面雜亂
+        ax.yaxis.set_minor_formatter(plt.NullFormatter())
+        # 保留次要刻度的輔助虛線，增強圖表層次感
         ax.yaxis.grid(True, which='minor', linestyle=':', alpha=0.4)
 
     # 移除外框
@@ -125,7 +149,7 @@ def convert_tables_to_figures(json_filepath, output_dir="../figures"):
     with open(json_filepath, 'r', encoding='utf-8') as f:
         config = json.load(f)
 
-    print("\n=== 開始將 Tables 資料轉換為長條圖 (使用 Log Scale) ===")
+    print("\n=== 開始將 Tables 資料轉換為長條圖 (針對數據優化 Log Scale) ===")
     
     if 'tables' not in config:
         print("錯誤：JSON 檔案中找不到 'tables' 標籤。")
@@ -140,7 +164,7 @@ def convert_tables_to_figures(json_filepath, output_dir="../figures"):
         raw_title = table_data['row_title']
         x_label = raw_title.replace('$', '').replace('\\#', 'Number').strip()
         
-        y_label = "Training Time (s) (Log Scale)" 
+        y_label = "Training Time (s)" 
         
         table_dict = table_data['data']
         
@@ -155,8 +179,8 @@ def convert_tables_to_figures(json_filepath, output_dir="../figures"):
                 try:
                     chart_data_dict[alg_name] = [row[col_idx] for row in matrix]
                 except IndexError:
-                    # log scale 下如果數值為 0 畫圖會消失，給一個 0.1 讓圖表不會 collapse
-                    chart_data_dict[alg_name] = [0.1] * len(x_ticks)
+                    # 預防資料缺失，給予預設值 (對齊地板 1e0)
+                    chart_data_dict[alg_name] = [1e0] * len(x_ticks)
 
             safe_col_name = col_name.replace(" ", "_").replace("(", "").replace(")", "")
             

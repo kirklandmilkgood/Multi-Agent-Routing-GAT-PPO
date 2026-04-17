@@ -39,12 +39,12 @@ learning_curve_seeds = [42, 100, 123]
 # 定義想要依序跑的演算法資料夾名稱
 # 可隨時註解掉不想跑的演算法
 nn_algorithms = [
-    "VDN",
-    "DGN",
-    "MAPPO",
-    "GAT_PPO",
-    # "DDTM",
-    "QMIX"
+    # "VDN",
+    # "DGN",
+    # "MAPPO",
+    # "GAT_PPO",
+    "DDTM",
+    # "QMIX"
 ]
 algorithms = [
     # "greedy",

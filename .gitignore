@@ -16,3 +16,4 @@ ppo_checkpoints/
 cache/
 **/cache/
 server*/
+test*/
