@@ -81,13 +81,13 @@ def draw_bar_chart(saved_file_name, x_label, y_label, x_ticks, data_dict, output
     ax.set_xticks(x_ticks)
     
     # 字體設定
-    ax.set_xticklabels([str(n) for n in x_ticks], fontsize=18, fontweight='bold')
-    ax.set_xlabel(x_label, fontsize=22, fontweight='bold')
-    ax.set_ylabel(y_label, fontsize=22, fontweight='bold')
+    ax.set_xticklabels([str(n) for n in x_ticks], fontsize=20, fontweight='black')
+    ax.set_xlabel(x_label, fontsize=24, fontweight='black', labelpad=10)
+    ax.set_ylabel(y_label, fontsize=24, fontweight='black', labelpad=10)
     
-    ax.tick_params(axis='y', labelsize=18, length=0)
+    ax.tick_params(axis='y', labelsize=20, length=0)
     ax.tick_params(axis='x', length=0, pad=10)
-
+    plt.setp(ax.get_yticklabels(), fontweight='bold')
     # 將 matplotlib 的「直向填充」改為「橫向填充」
     handles, labels = ax.get_legend_handles_labels()
     ncol = 6
@@ -106,7 +106,7 @@ def draw_bar_chart(saved_file_name, x_label, y_label, x_ticks, data_dict, output
     ax.legend(handles_reordered, labels_reordered, 
               loc='lower center', bbox_to_anchor=(0.5, 1.05), ncol=ncol, 
               frameon=False, handlelength=1.2, handleheight=1.2,
-              prop={'size': 16, 'weight': 'bold'})
+              prop={'size': 18, 'weight': 'bold'})
 
     # 儲存與清理
     plt.tight_layout()
@@ -125,7 +125,10 @@ def convert_tables_to_figures(json_filepath, output_dir="../figures"):
     # 全局字體與參數設定
     plt.rcParams['font.family'] = 'serif'
     plt.rcParams['font.serif'] = ['Times New Roman'] + plt.rcParams['font.serif']
-    plt.rcParams['axes.linewidth'] = 1.0
+    plt.rcParams['font.weight'] = 'bold'
+    plt.rcParams['axes.labelweight'] = 'bold'
+    plt.rcParams['axes.titleweight'] = 'bold'
+    plt.rcParams['axes.linewidth'] = 1.5
     plt.rcParams['axes.grid'] = True
     plt.rcParams['grid.alpha'] = 0.3
     plt.rcParams['grid.color'] = '#cccccc'

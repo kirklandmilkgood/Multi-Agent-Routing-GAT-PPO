@@ -9,7 +9,7 @@
             "episodes": 100,
             "dynamic": 0,
             "horizontal_axis_title": "Episode",
-            "vertical_axis_title": "Objective Value"
+            "vertical_axis_title": "Rewards"
         }
     ]
 }

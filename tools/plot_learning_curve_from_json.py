@@ -6,7 +6,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def plot_learning_curves(json_path="../learning_curve/learning_curves.json", output_dir="../test"):
+def plot_learning_curves(json_path="../learning_curve/learning_curves.json", output_dir="../learning_curve"):
     if not os.path.exists(json_path):
         print(f"找不到 JSON 檔案: {json_path}")
         return
@@ -24,7 +24,7 @@ def plot_learning_curves(json_path="../learning_curve/learning_curves.json", out
     plt.rcParams['axes.labelweight'] = 'bold'
     plt.rcParams['axes.titleweight'] = 'bold'
 
-    print("開始解析 JSON 數據並重新繪製超清晰陰影圖...")
+    print("開始解析 JSON 數據並重新繪製陰影圖...")
 
     for dict_key, fig_data in data["figures"].items():
         title = fig_data["title"]
@@ -56,7 +56,8 @@ def plot_learning_curves(json_path="../learning_curve/learning_curves.json", out
             y=y_title, 
             hue="Algorithm", 
             errorbar='sd', 
-            linewidth=3
+            linewidth=3,
+            legend=False
         )
         
         # 座標軸文字
@@ -68,8 +69,8 @@ def plot_learning_curves(json_path="../learning_curve/learning_curves.json", out
         plt.yticks(fontsize=16, fontweight='bold')
         
         # 圖例 (legend)
-        plt.setp(ax.get_legend().get_texts(), fontsize='16', fontweight='bold')
-        plt.setp(ax.get_legend().get_title(), fontsize='18', fontweight='black')
+        # plt.setp(ax.get_legend().get_texts(), fontsize='16', fontweight='bold')
+        # plt.setp(ax.get_legend().get_title(), fontsize='18', fontweight='black')
         
         plt.tight_layout()
         
