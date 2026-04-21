@@ -61,12 +61,12 @@ def plot_learning_curves(json_path="../learning_curve/learning_curves.json", out
         )
         
         # 座標軸文字
-        plt.xlabel(x_title, fontsize=20, fontweight='black', labelpad=10)
-        plt.ylabel(y_title, fontsize=20, fontweight='black', labelpad=10)
+        plt.xlabel(x_title, fontsize=32, fontweight='black', labelpad=10)
+        plt.ylabel(y_title, fontsize=32, fontweight='black', labelpad=10)
         
         # 刻度數字 (ticks)
-        plt.xticks(fontsize=16, fontweight='bold')
-        plt.yticks(fontsize=16, fontweight='bold')
+        plt.xticks(fontsize=22, fontweight='bold')
+        plt.yticks(fontsize=22, fontweight='bold')
         
         # 圖例 (legend)
         # plt.setp(ax.get_legend().get_texts(), fontsize='16', fontweight='bold')

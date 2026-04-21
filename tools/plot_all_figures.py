@@ -8,13 +8,10 @@ def generate_academic_plots(json_filepath, output_dir="../figures"):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    # 全局字體與參數設定
+    # 優先使用 Cambria 或 Georgia 字體，退而求其次才是 Times New Roman
     plt.rcParams['font.family'] = 'serif'
-    plt.rcParams['font.serif'] = ['Times New Roman'] + plt.rcParams['font.serif']
-    plt.rcParams['font.weight'] = 'bold'
-    plt.rcParams['axes.labelweight'] = 'bold'
-    plt.rcParams['axes.titleweight'] = 'bold'
-    plt.rcParams['axes.linewidth'] = 1.5  # 外框線條稍微加粗
+    plt.rcParams['font.serif'] = ['Cambria', 'Georgia', 'Times New Roman'] + plt.rcParams['font.serif']
+    plt.rcParams['axes.linewidth'] = 1.5
     plt.rcParams['axes.grid'] = True
     plt.rcParams['grid.alpha'] = 0.3
     plt.rcParams['grid.color'] = '#cccccc'
@@ -47,35 +44,31 @@ def generate_academic_plots(json_filepath, output_dir="../figures"):
 
         print(f"正在繪製圖表: {saved_file_name} ...")
 
-        fig, ax = plt.subplots(figsize=(12, 6), dpi=300)
+        # 畫布比例
+        fig, ax = plt.subplots(figsize=(9, 4.5), dpi=300)
 
         # 強制把 GAT-PPO 排到陣列最後面
         alg_names = list(data_dict.keys())
         target_alg = None
-        
-        # 尋找 GAT-PPO
         for name in alg_names:
             if name.lower() == 'gat-ppo':
                 target_alg = name
                 break
         
-        # 如果有找到，就先移除它，再把它加到最後面 (確保柱子畫在最右邊)
         if target_alg:
             alg_names.remove(target_alg)
             alg_names.append(target_alg)
 
-        # 動態計算柱子寬度與偏移量
+        # 柱子設定
         total_algs = len(alg_names)
-        total_width = 0.92 
+        total_width = 0.85
         bar_width = total_width / total_algs
         offsets = np.linspace(-total_width/2 + bar_width/2, total_width/2 - bar_width/2, total_algs)
 
-        # 依照排好的 alg_names 依序畫圖
         for i, alg_name in enumerate(alg_names):
             alg_values = data_dict[alg_name]
             color = color_map.get(alg_name, '#333333') 
-            
-            ax.bar(x_ticks + offsets[i], alg_values, width=bar_width*0.98, 
+            ax.bar(x_ticks + offsets[i], alg_values, width=bar_width*0.95, 
                    label=alg_name, color=color, edgecolor='none', zorder=3)
 
         # 移除外框
@@ -84,32 +77,24 @@ def generate_academic_plots(json_filepath, output_dir="../figures"):
         ax.spines['left'].set_visible(False)
         ax.spines['bottom'].set_visible(False)
 
-        # 設定網格與坐標軸
         ax.xaxis.grid(False) 
         ax.set_xticks(x_ticks)
+        ax.set_xlim(min(x_ticks) - 0.6, max(x_ticks) + 0.6)
         
-        # 放大的字體設定
-        ax.set_xticklabels([str(n) for n in x_ticks], fontsize=20, fontweight='black')
-        ax.set_xlabel(x_label, fontsize=24, fontweight='black', labelpad=10)
-        ax.set_ylabel(y_label, fontsize=24, fontweight='black', labelpad=10)
+        ax.set_xticklabels([str(n) for n in x_ticks], fontsize=22)
+        ax.set_xlabel(x_label, fontsize=30, fontweight='bold', labelpad=8)
+        ax.set_ylabel(y_label, fontsize=30, fontweight='bold', labelpad=8)
         
-        ax.tick_params(axis='y', labelsize=20, length=0)
-        ax.tick_params(axis='x', length=0, pad=10)
-        
-        # 強制 Y 軸刻度文字加粗
-        plt.setp(ax.get_yticklabels(), fontweight='bold')
+        ax.tick_params(axis='y', labelsize=22, length=4, width=1.5)
+        ax.tick_params(axis='x', length=0, pad=8)
 
-        # 將 matplotlib 的「直向填充」改為「橫向填充」
+        # 圖例排版邏輯
         handles, labels = ax.get_legend_handles_labels()
         ncol = 6
-        
-        # 計算總共需要幾列 (如 11 個演算法 / 6 = 2 列)
         nrow = math.ceil(len(handles) / ncol)
         
         handles_reordered = []
         labels_reordered = []
-        
-        # 透過矩陣轉置的數學邏輯，預先將陣列洗牌
         for c in range(ncol):
             for r in range(nrow):
                 idx = r * ncol + c
@@ -117,20 +102,20 @@ def generate_academic_plots(json_filepath, output_dir="../figures"):
                     handles_reordered.append(handles[idx])
                     labels_reordered.append(labels[idx])
 
-        # 傳入洗牌後的結果
         ax.legend(handles_reordered, labels_reordered, 
                   loc='lower center', bbox_to_anchor=(0.5, 1.05), ncol=ncol, 
-                  frameon=False, handlelength=1.2, handleheight=1.2,
-                  prop={'size': 18, 'weight': 'bold'})
-
-        # 儲存與清理
-        plt.tight_layout()
-        output_path = os.path.join(output_dir, f"{saved_file_name}.png")
-        plt.savefig(output_path, bbox_inches='tight')
+                  frameon=False, 
+                  handlelength=0.3,
+                  handleheight=0.3,    
+                  handletextpad=0.2,
+                  columnspacing=0.4,   
+                  prop={'size': 24})
         
+        output_path = os.path.join(output_dir, f"{saved_file_name}.png")
+        plt.savefig(output_path, dpi=300, bbox_inches='tight', pad_inches=0.05)
         plt.close(fig) 
 
-    print(f"\n所有圖表皆已匯出至 '{output_dir}/' 資料夾中。")
+    print(f"\n 所有圖表皆已匯出至 '{output_dir}/' 資料夾中。")
 
 if __name__ == "__main__":
     generate_academic_plots("../experiments_data.json", output_dir="../figures")
